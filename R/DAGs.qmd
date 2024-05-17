@@ -1,0 +1,118 @@
+---
+title: "Directed Acyclic Graph (DAG)"
+subtitle: "Indoor dust microbiome (exposure) and allergic diseases (outcome)"
+author: 
+  - "Javier Mancilla Galindo, MSc student"
+  - "Supervisors: Inge Wouters and Alex Bossers"
+date: today
+execute: 
+  echo: false
+  warning: false
+toc: false
+format:
+  pdf:
+    documentclass: scrartcl
+  docx:
+    highlight-style: github
+bibliography: references-dust-microbiome-review.bib
+csl: environment-international.csl
+editor: source
+---
+
+\pagebreak
+
+# Packages and session information
+
+```{r}
+
+if (!require("pacman", quietly = TRUE)) {
+  install.packages("pacman")
+}
+
+pacman::p_load(
+  tidyverse,
+  readxl,
+  dagitty,
+  table1,
+  gt,
+  report
+)
+
+```
+
+```{r}
+psfolder <- "../data/processed"
+dir.create(psfolder, showWarnings = FALSE)
+
+# Credits chunk of code: Alex Bossers, Utrecht University (a.bossers@uu.nl)
+
+session <- sessionInfo()
+# remove clutter
+session$BLAS <- NULL
+session$LAPACK <- NULL
+session$loadedOnly <- NULL
+
+# write log file
+writeLines(
+  capture.output(print(session, locale = FALSE)),
+  paste0("sessions/",lubridate::today(), "_session_DAGs.txt")
+)
+
+session
+```
+
+\pagebreak
+
+I will load dataset and remove redundant columns or those for self use.
+
+```{r}
+data <- read_excel(
+  "../data/raw/Dust_Microbiome_Search.xlsx",
+  na = c("NA", "var")
+  )
+```
+
+The original dataset has `r count(data)` rows and `r length(data)` columns. 
+
+```{r}
+#| echo: true 
+columns_to_remove <- c(
+  "Dupl", # Duplicate records in search, only for own records
+  "Type", # No varying data since all were journal articles
+  "Download available", # Only for own records, all were available
+  "Abstract","Citation","Link", # Info also in references-dust-microbiome.csv
+  "Pathway_internal", # Internal pathway to access PDFs in my personal laptop
+  "Indoor_dust_microbiome", # No varying data, as all are "yes"
+  "Comments", # Annotations used for my own use.
+  "Study_size" # Only registered this for few studies of my interest. 
+)
+
+data <- data %>% select(!all_of(columns_to_remove))
+```
+
+The dataset now has `r count(data)` rows and `r length(data)` columns. 
+
+I will now import the attributes for the dataset from the sourced script *variable_names_raw.R*
+
+```{r}
+source("scripts/variable_names_raw.R")
+```
+
+
+\pagebreak
+
+# Package references
+
+```{r}
+#| include: false
+report::cite_packages(session)
+```
+
+```{r}
+#| include: false  
+# Run this chunk if you wish to clear your environment and unload packages.
+
+rm(list = ls())
+pacman::p_unload(negate = TRUE)
+
+```

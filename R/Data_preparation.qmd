@@ -1,0 +1,352 @@
+---
+title: "Indoor dust bacterial and fungal microbiota composition and allergic diseases: a scoping review"
+subtitle: "Data cleaning and preparation"
+author: 
+  - "Javier Mancilla Galindo, MSc student"
+  - "Supervisors: Inge Wouters and Alex Bossers"
+date: today
+execute: 
+  echo: false
+  warning: false
+toc: false
+format:
+  pdf:
+    documentclass: scrartcl
+bibliography: ../docs/manuscript/references-dust-microbiome-review.bib
+csl: ../docs/manuscript/environment-international.csl
+editor: source
+---
+
+\pagebreak
+
+# Packages and session information
+
+```{r}
+#| echo: true
+
+if (!require("pacman", quietly = TRUE)) {
+  install.packages("pacman")
+}
+
+pacman::p_load(
+  tidyverse, # Basic data handling. 
+  readxl, # Import data in .xlsx format.
+  table1, # Used for column labeling.
+  maps, # Used to retrieve ISO3 codes for countries.
+  haven, # Export data into different formats.
+  report, # Used to generate package citations in markdown format.
+  gt # Print html tables.
+)
+
+```
+
+```{r}
+psfolder <- "../data/processed"
+dir.create(psfolder, showWarnings = FALSE)
+
+# Credits chunk of code: Alex Bossers, Utrecht University (a.bossers@uu.nl)
+
+session <- sessionInfo()
+# remove clutter
+session$BLAS <- NULL
+session$LAPACK <- NULL
+session$loadedOnly <- NULL
+
+# write log file
+writeLines(
+  capture.output(print(session, locale = FALSE)),
+  paste0("sessions/",lubridate::today(), "_session_Data_cleaning.txt")
+)
+
+session
+```
+
+\pagebreak
+
+### Main dataframe
+
+I will load dataset and remove redundant columns or those for self use. The original data charting dataset is in the wide format. I will separate some variables into new tables later and convert to long formate to facilitate analyses later on. 
+
+```{r}
+data <- read_excel(
+  "../data/raw/Dust_Microbiome_Search.xlsx",
+  na = c("NA", "var")
+  )
+```
+
+The original dataset has `r count(data)` rows and `r length(data)` columns. 
+
+```{r}
+#| echo: true 
+columns_to_remove <- c(
+  "Dupl", # Duplicate records in search, only for own records
+  "Type", # No varying data since all were journal articles
+  "Download available", # Only for own records, all were available
+  "Abstract","Citation","Link", # Info also in references-dust-microbiome.csv
+  "Pathway_internal", # Internal pathway to access PDFs in my personal laptop
+  "Indoor_dust_microbiome", # No varying data, as all are "yes"
+  "ISO3", # Not needed for to do the join.   
+  "Study_unit", # Redundant with 'Building' variable.
+  "Comments", # Annotations used for my own use.
+  "Confounding/causality_comments", # Annotations used for my own use. 
+  "Study_size" # Only registered this for few studies of my interest. 
+)
+
+data <- data %>% select(!all_of(columns_to_remove))
+```
+
+The dataset now has `r count(data)` rows and `r length(data)` columns. 
+
+I will now import the attributes for the dataset from the sourced script *variable_names.R*
+
+```{r}
+source("scripts/variable_names.R")
+```
+
+I will now import the bibliography dataset. 
+
+```{r}
+references <- read.csv(
+  "../data/raw/references-dust-microbiome.csv"
+  )
+```
+
+### References dataframe
+
+I will now add the citation key column to `data`.   
+
+```{r}
+citation_key <- references %>% select(Num, Citation_key)
+
+data <- left_join(data, citation_key, by = "Num")
+
+rm(citation_key, columns_to_remove)
+```
+
+`data` now has `r length(data)` columns.
+
+### Countries dataframe
+
+I will now process country data and link it to their corresponding regions and income classification by using the data from the world bank [@TheWorldBank2024].  
+
+Note that there are studies for which sampled occured in more than 1 country, reason why the count of countries can exceed the initial total count. Additionally, there were studies for which sampled ocurred in the international space station (ISS).   
+
+```{r}
+data %>% 
+  group_by(Multiple_Countries) %>% 
+  summarize(n = n()) %>% 
+  mutate(Percentage = round((n/sum(n)*100), digits=1)) %>% 
+  gt()
+```
+
+
+```{r}
+# This code is to separate countries and save in long format
+countries <- data %>% 
+  select(Num, Country) %>% 
+  separate_rows(Country, sep = ", ") %>% 
+  filter(Country != "NA") 
+```
+
+After excluding studies in the ISS, `countries` now has `r count(countries)` rows.
+
+```{r}
+# Import ISO3 codes from 'maps' R package: 
+iso <- iso3166 %>% 
+  rename(
+    ISO3 = a3,
+    Country = mapname
+  ) %>% 
+  select(ISO3, Country)
+
+### Some names in country colum need cleaning. 
+iso$Country[iso$ISO3 == "GBR"] <- "United Kingdom"
+iso$Country[iso$ISO3 == "NOR"] <- "Norway"
+iso$Country[iso$ISO3 == "FIN"] <- "Finland"
+
+# Assign ISO3 codes in countries dataset 
+countries <- countries %>% left_join(iso, by = "Country") 
+
+# Import World Bank data to join with ISO3 code. 
+income <- read_excel("../data/raw/Income_groups.xlsx") %>% 
+  rename(
+    Country = Economy,
+    ISO3 = Code,
+    Income = "Income group"
+) %>% 
+  select(ISO3, Income, Region)
+
+# Assign income levels and regions in countries dataset 
+countries <- countries %>% left_join(income, by = "ISO3") 
+
+# Add labels to columns: 
+table1::label(countries$Country) <- "Country of sample collection"
+table1::label(countries$ISO3) <- "ISO 3166-1 alpha-3 code"
+table1::label(countries$Income) <- "Income classification"
+table1::label(countries$Region) <- "World region"
+
+rm(income, iso)
+```
+
+`countries` now has `r length(countries)` columns.
+
+### Dust collectors dataframe  
+
+```{r}
+collectors <- data %>% 
+  select(Num, Dust_collector) %>%
+  separate_rows(Dust_collector, sep = ", ")
+
+table1::label(collectors$Dust_collector) <- "Dust sample collector"
+```
+
+`collectors` has `r count(data)` rows. 
+
+### Environmental determinants dataframe  
+
+```{r}
+environmental_determinants <- data %>% 
+  filter(Environmental_determinants == "Yes") %>% 
+  select(Num, Environ_specify) %>%
+  separate_rows(Environ_specify, sep = ", ")
+
+table1::label(environmental_determinants$Environ_specify) <- 
+  "Environmental determinants assessed"
+```
+
+`environmental_determinants` has `r count(data)` rows. 
+
+\pagebreak
+
+# Writing and saving into different data formats for greater reusability   
+
+### S4 object 
+
+I will store individual dataframes in an S4 object:   
+```{r}
+setClass(
+  "DataFrameCollection",
+  slots = list(data = "data.frame",
+               countries = "data.frame",
+               collectors = "data.frame",
+               environmental_determinants = "data.frame",
+               references = "data.frame")
+  )
+
+Data_Dust_Microbiome_Review <- new(
+  "DataFrameCollection", 
+  data = data,
+  countries = countries,
+  collectors = collectors, 
+  environmental_determinants = environmental_determinants,
+  references = references
+  )
+
+str(Data_Dust_Microbiome_Review, max.level = 2)
+```
+
+#### R Data 
+
+```{r}
+#| echo: true
+save(Data_Dust_Microbiome_Review, 
+     file = paste0(psfolder,"/Data_Dust_Microbiome_Review.RData"))
+```
+
+### SPSS   
+
+```{r}
+#| echo: true
+sav_folder <- "../data/processed/sav"
+dir.create(sav_folder, showWarnings = FALSE, recursive = TRUE)
+
+# Save each data frame to a .sav file
+write_sav(data, file.path(sav_folder, "main_data.sav"))
+write_sav(countries, file.path(sav_folder, "countries.sav"))
+write_sav(collectors, file.path(sav_folder, "collectors.sav"))
+write_sav(environmental_determinants, 
+          file.path(sav_folder, "environmental_determinants.sav"))
+```
+
+### SAS   
+
+```{r}
+#| echo: true
+xpt_folder <- "../data/processed/xpt"
+dir.create(xpt_folder, showWarnings = FALSE, recursive = TRUE)
+
+# Save each data frame to a .xpt file
+write_xpt(data, file.path(xpt_folder, "main_data.xpt"))
+write_xpt(countries, file.path(xpt_folder, "countries.xpt"))
+write_xpt(collectors, file.path(xpt_folder, "collectors.xpt"))
+write_xpt(environmental_determinants, 
+          file.path(xpt_folder, "environmental_determinants.xpt"))
+```
+
+### STATA  
+```{r}
+#| echo: true
+dta_folder <- "../data/processed/dta"
+dir.create(dta_folder, showWarnings = FALSE, recursive = TRUE)
+
+# Save each data frame to a .dta file
+write_dta(data, file.path(dta_folder, "main_data.dta"))
+write_dta(countries, file.path(dta_folder, "countries.dta"))
+write_dta(collectors, file.path(dta_folder, "collectors.dta"))
+write_dta(environmental_determinants, 
+          file.path(dta_folder, "environmental_determinants.dta"))
+```
+
+### CSV   
+```{r}
+#| echo: true
+csv_folder <- "../data/processed/csv"
+dir.create(csv_folder, showWarnings = FALSE, recursive = TRUE)
+
+# Save each data frame to a CSV file
+write.csv(data, file.path(csv_folder, "main_data.csv"), row.names = FALSE)
+write.csv(countries, file.path(csv_folder, "countries.csv"), row.names = FALSE)
+write.csv(collectors, file.path(csv_folder, "collectors.csv"), row.names = FALSE)
+write.csv(environmental_determinants, file.path(csv_folder, "environmental_determinants.csv"), row.names = FALSE)
+write.csv(references, file.path(csv_folder, "references.csv"), row.names = FALSE)
+```
+
+
+# References
+## Package references
+
+```{r}
+#| include: false
+report::cite_packages(session)
+```
+
+  - Becker, Minka, Deckmyn. A (2023). _maps: Draw Geographical Maps_. R package version 3.4.2, <https://CRAN.R-project.org/package=maps>.
+  - Grolemund G, Wickham H (2011). “Dates and Times Made Easy with lubridate.” _Journal of Statistical Software_, *40*(3), 1-25. <https://www.jstatsoft.org/v40/i03/>.
+  - Iannone R, Cheng J, Schloerke B, Hughes E, Lauer A, Seo J (2024). _gt: Easily Create Presentation-Ready Display Tables_. R package version 0.10.1, <https://CRAN.R-project.org/package=gt>.
+  - Makowski D, Lüdecke D, Patil I, Thériault R, Ben-Shachar M, Wiernik B (2023). “Automated Results Reporting as a Practical Tool to Improve Reproducibility and Methodological Best Practices Adoption.” _CRAN_. <https://easystats.github.io/report/>.
+  - Müller K, Wickham H (2023). _tibble: Simple Data Frames_. R package version 3.2.1, <https://CRAN.R-project.org/package=tibble>.
+  - R Core Team (2024). _R: A Language and Environment for Statistical Computing_. R Foundation for Statistical Computing, Vienna, Austria. <https://www.R-project.org/>.
+  - Rich B (2023). _table1: Tables of Descriptive Statistics in HTML_. R package version 1.4.3, <https://CRAN.R-project.org/package=table1>.
+  - Rinker TW, Kurkiewicz D (2018). _pacman: Package Management for R_. version 0.5.0, <http://github.com/trinker/pacman>.
+  - Wickham H (2016). _ggplot2: Elegant Graphics for Data Analysis_. Springer-Verlag New York. ISBN 978-3-319-24277-4, <https://ggplot2.tidyverse.org>.
+  - Wickham H (2023). _forcats: Tools for Working with Categorical Variables (Factors)_. R package version 1.0.0, <https://CRAN.R-project.org/package=forcats>.
+  - Wickham H (2023). _stringr: Simple, Consistent Wrappers for Common String Operations_. R package version 1.5.1, <https://CRAN.R-project.org/package=stringr>.
+  - Wickham H, Averick M, Bryan J, Chang W, McGowan LD, François R, Grolemund G, Hayes A, Henry L, Hester J, Kuhn M, Pedersen TL, Miller E, Bache SM, Müller K, Ooms J, Robinson D, Seidel DP, Spinu V, Takahashi K, Vaughan D, Wilke C, Woo K, Yutani H (2019). “Welcome to the tidyverse.” _Journal of Open Source Software_, *4*(43), 1686. doi:10.21105/joss.01686 <https://doi.org/10.21105/joss.01686>.
+  - Wickham H, Bryan J (2023). _readxl: Read Excel Files_. R package version 1.4.3, <https://CRAN.R-project.org/package=readxl>.
+  - Wickham H, François R, Henry L, Müller K, Vaughan D (2023). _dplyr: A Grammar of Data Manipulation_. R package version 1.1.4, <https://CRAN.R-project.org/package=dplyr>.
+  - Wickham H, Henry L (2023). _purrr: Functional Programming Tools_. R package version 1.0.2, <https://CRAN.R-project.org/package=purrr>.
+  - Wickham H, Hester J, Bryan J (2024). _readr: Read Rectangular Text Data_. R package version 2.1.5, <https://CRAN.R-project.org/package=readr>.
+  - Wickham H, Miller E, Smith D (2023). _haven: Import and Export 'SPSS', 'Stata' and 'SAS' Files_. R package version 2.5.4, <https://CRAN.R-project.org/package=haven>.
+  - Wickham H, Vaughan D, Girlich M (2024). _tidyr: Tidy Messy Data_. R package version 1.3.1, <https://CRAN.R-project.org/package=tidyr>.
+
+## Other references
+
+```{r}
+#| include: false  
+# Run this chunk if you wish to clear your environment and unload packages.
+
+rm(list = ls())
+
+pacman::p_unload(negate = TRUE)
+
+```
