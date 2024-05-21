@@ -1,6 +1,6 @@
 ---
-title: "Indoor dust bacterial and fungal microbiota composition and allergic diseases: a scoping review"
-subtitle: "Data cleaning and preparation"
+title: "Data cleaning and preparation"
+subtitle: "Indoor dust bacterial and fungal microbiota composition and allergic diseases: a scoping review"
 author: 
   - "Javier Mancilla Galindo, MSc student"
   - "Supervisors: Inge Wouters and Alex Bossers"
@@ -23,11 +23,9 @@ editor: source
 
 ```{r}
 #| echo: true
-
 if (!require("pacman", quietly = TRUE)) {
   install.packages("pacman")
 }
-
 pacman::p_load(
   tidyverse, # Basic data handling. 
   readxl, # Import data in .xlsx format.
@@ -35,6 +33,8 @@ pacman::p_load(
   maps, # Used to retrieve ISO3 codes for countries.
   haven, # Export data into different formats.
   report, # Used to generate package citations in markdown format.
+  officer, # Export tables
+  gto, # Add gt table to a word document. 
   gt # Print html tables.
 )
 
@@ -42,9 +42,11 @@ pacman::p_load(
 
 ```{r}
 psfolder <- "../data/processed"
+tabfolder <- "../results/output_tables"
 dir.create(psfolder, showWarnings = FALSE)
+dir.create(tabfolder, showWarnings = FALSE)
 
-# Credits chunk of code: Alex Bossers, Utrecht University (a.bossers@uu.nl)
+# Credits chunk of code: Alex Bossers, Utrecht University
 
 session <- sessionInfo()
 # remove clutter
@@ -65,7 +67,7 @@ session
 
 ### Main dataframe
 
-I will load dataset and remove redundant columns or those for self use. The original data charting dataset is in the wide format. I will separate some variables into new tables later and convert to long formate to facilitate analyses later on. 
+I will load dataset and remove redundant columns or those only for own use. The original data charting dataset is in the wide format. I will separate some variables into new tables later and convert to long format to facilitate analyses later on. 
 
 ```{r}
 data <- read_excel(
@@ -85,6 +87,7 @@ columns_to_remove <- c(
   "Abstract","Citation","Link", # Info also in references-dust-microbiome.csv
   "Pathway_internal", # Internal pathway to access PDFs in my personal laptop
   "Indoor_dust_microbiome", # No varying data, as all are "yes"
+  "Environmental_category", # Will be recreated with later code. 
   "ISO3", # Not needed for to do the join.   
   "Study_unit", # Redundant with 'Building' variable.
   "Comments", # Annotations used for my own use.
@@ -109,12 +112,14 @@ I will now import the bibliography dataset.
 references <- read.csv(
   "../data/raw/references-dust-microbiome.csv"
   )
+
+references$Citation_key <- references$Citation_key %>% 
+   gsub(' ', '', . )
 ```
 
 ### References dataframe
 
 I will now add the citation key column to `data`.   
-
 ```{r}
 citation_key <- references %>% select(Num, Citation_key)
 
@@ -129,7 +134,7 @@ rm(citation_key, columns_to_remove)
 
 I will now process country data and link it to their corresponding regions and income classification by using the data from the world bank [@TheWorldBank2024].  
 
-Note that there are studies for which sampled occured in more than 1 country, reason why the count of countries can exceed the initial total count. Additionally, there were studies for which sampled ocurred in the international space station (ISS).   
+Note that there are studies for which sampling occurred in more than 1 country, reason why the count of countries can exceed the initial total count. Additionally, there were studies for which samples were obtained in the international space station (ISS).   
 
 ```{r}
 data %>% 
@@ -188,7 +193,7 @@ table1::label(countries$Region) <- "World region"
 rm(income, iso)
 ```
 
-`countries` now has `r length(countries)` columns.
+The final `countries` has `r count(countries)` rows and `r length(countries)` columns.
 
 ### Dust collectors dataframe  
 
@@ -200,13 +205,16 @@ collectors <- data %>%
 table1::label(collectors$Dust_collector) <- "Dust sample collector"
 ```
 
-`collectors` has `r count(data)` rows. 
+`collectors` has `r count(collectors)` rows and and `r length(collectors)` columns. 
 
 ### Environmental determinants dataframe  
+
+I will filter only studies that reported environmental characteristics and exclude study number 69 since this study reports 668 environmental determinants [@pakpour2016a], which would be very challenging to summarize in a way that is comparable to other studies included in this review. 
 
 ```{r}
 environmental_determinants <- data %>% 
   filter(Environmental_determinants == "Yes") %>% 
+  filter(Num != "69") %>% 
   select(Num, Environ_specify) %>%
   separate_rows(Environ_specify, sep = ", ")
 
@@ -214,7 +222,23 @@ table1::label(environmental_determinants$Environ_specify) <-
   "Environmental determinants assessed"
 ```
 
-`environmental_determinants` has `r count(data)` rows. 
+`environmental_determinants` has `r count(environmental_determinants)` rows and `r length(environmental_determinants)` columns. 
+
+Some processing of environmental determinants is needed to analyze: 
+
+```{r}
+source("scripts/preparation_environmental_determinants.R")
+```
+
+`environmental_determinants` now has `r count(environmental_determinants)` rows and `r length(environmental_determinants)` columns. 
+
+\pagebreak
+
+This is the record of which environmental categories were mapped to each environmental determinant extracted from the studies in the review: 
+
+```{r}
+categories
+```
 
 \pagebreak
 
@@ -253,7 +277,42 @@ save(Data_Dust_Microbiome_Review,
      file = paste0(psfolder,"/Data_Dust_Microbiome_Review.RData"))
 ```
 
+### CSV   
+
+```{r}
+#| echo: true
+csv_folder <- "../data/processed/csv"
+dir.create(csv_folder, showWarnings = FALSE, recursive = TRUE)
+
+# Save each data frame to a CSV file
+write.csv(data, file.path(csv_folder, "main_data.csv"), 
+          row.names = FALSE)
+write.csv(countries, file.path(csv_folder, "countries.csv"), 
+          row.names = FALSE)
+write.csv(collectors, file.path(csv_folder, "collectors.csv"), 
+          row.names = FALSE)
+write.csv(environmental_determinants, 
+          file.path(csv_folder, "environmental_determinants.csv"), 
+          row.names = FALSE)
+write.csv(references, file.path(csv_folder, "references.csv"), 
+          row.names = FALSE)
+```
+
 ### SPSS   
+
+```{r}
+# Remove columns that have already been processed and saved separately. 
+# The information in these columns is still available in the main data CSV. 
+data <- data %>% 
+  select(
+    -c(
+      Environ_specify, 
+      Country, 
+      Dust_collector
+      )
+    )
+```
+
 
 ```{r}
 #| echo: true
@@ -297,20 +356,7 @@ write_dta(environmental_determinants,
           file.path(dta_folder, "environmental_determinants.dta"))
 ```
 
-### CSV   
-```{r}
-#| echo: true
-csv_folder <- "../data/processed/csv"
-dir.create(csv_folder, showWarnings = FALSE, recursive = TRUE)
-
-# Save each data frame to a CSV file
-write.csv(data, file.path(csv_folder, "main_data.csv"), row.names = FALSE)
-write.csv(countries, file.path(csv_folder, "countries.csv"), row.names = FALSE)
-write.csv(collectors, file.path(csv_folder, "collectors.csv"), row.names = FALSE)
-write.csv(environmental_determinants, file.path(csv_folder, "environmental_determinants.csv"), row.names = FALSE)
-write.csv(references, file.path(csv_folder, "references.csv"), row.names = FALSE)
-```
-
+\pagebreak
 
 # References
 ## Package references
@@ -320,8 +366,10 @@ write.csv(references, file.path(csv_folder, "references.csv"), row.names = FALSE
 report::cite_packages(session)
 ```
 
-  - Becker, Minka, Deckmyn. A (2023). _maps: Draw Geographical Maps_. R package version 3.4.2, <https://CRAN.R-project.org/package=maps>.
+  - Becker RA, Minka TP, Deckmyn. A (2023). _maps: Draw Geographical Maps_. R package version 3.4.2, <https://CRAN.R-project.org/package=maps>.
+  - Gohel D, Moog S (2024). _officer: Manipulation of Microsoft Word and PowerPoint Documents_. R package version 0.6.5, <https://CRAN.R-project.org/package=officer>.
   - Grolemund G, Wickham H (2011). “Dates and Times Made Easy with lubridate.” _Journal of Statistical Software_, *40*(3), 1-25. <https://www.jstatsoft.org/v40/i03/>.
+  - Hughes E (2023). _gto: Insert 'gt' Tables into Word Documents_. R package version 0.1.1, <https://CRAN.R-project.org/package=gto>.
   - Iannone R, Cheng J, Schloerke B, Hughes E, Lauer A, Seo J (2024). _gt: Easily Create Presentation-Ready Display Tables_. R package version 0.10.1, <https://CRAN.R-project.org/package=gt>.
   - Makowski D, Lüdecke D, Patil I, Thériault R, Ben-Shachar M, Wiernik B (2023). “Automated Results Reporting as a Practical Tool to Improve Reproducibility and Methodological Best Practices Adoption.” _CRAN_. <https://easystats.github.io/report/>.
   - Müller K, Wickham H (2023). _tibble: Simple Data Frames_. R package version 3.2.1, <https://CRAN.R-project.org/package=tibble>.

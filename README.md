@@ -7,7 +7,7 @@ This repository contains the documentation for reproducibility of the study ***"
 
 IN PROGRESS
 
-Although I have made significant efforts to ensure reproducibility of this project, I encourage you to contact ([j.mancillagalindo@uu.nl](mailto:j.mancillagalindo@uu.nl)) me or post a request in this repository in case you encounter any issues.   
+Although I have made significant efforts to ensure reproducibility of this project, I encourage you to contact ([contact me](mailto:j.mancillagalindo@uu.nl)) or post a request in this repository in case you encounter any issues.   
 
 ## Project Structure
 

@@ -1,0 +1,477 @@
+---
+title: "Implied graphs from individual stdies "
+subtitle: "Indoor dust microbiome (exposure) and allergic diseases (outcome)"
+author: 
+  - "Javier Mancilla Galindo, MSc student"
+  - "Supervisors: Inge Wouters and Alex Bossers"
+date: today
+execute: 
+  echo: false
+  warning: false
+toc: true
+format:
+  pdf:
+    documentclass: scrartcl
+  docx:
+    highlight-style: github
+bibliography: ../docs/manuscript/references-dust-microbiome-review.bib
+csl: ../docs/manuscript/environment-international.csl
+editor: source
+---
+
+\pagebreak
+
+# Packages and session information
+
+```{r}
+#| echo: true 
+if (!require("pacman", quietly = TRUE)) {
+  install.packages("pacman")
+}
+
+pacman::p_load(
+  tidyverse,
+  readxl,
+  dagitty,
+  table1,
+  gt,
+  report
+)
+
+```
+
+```{r}
+psfolder <- "../data/processed"
+figfolder <- "../results/output_figures/implied_graphs"
+dir.create(psfolder, showWarnings = FALSE)
+dir.create(figfolder, showWarnings = FALSE)
+
+# Credits chunk of code: Alex Bossers, Utrecht University
+
+session <- sessionInfo()
+# remove clutter
+session$BLAS <- NULL
+session$LAPACK <- NULL
+session$loadedOnly <- NULL
+
+# write log file
+writeLines(
+  capture.output(print(session, locale = FALSE)),
+  paste0("sessions/",lubridate::today(), "_session_implied_graphs.txt")
+)
+
+session
+```
+
+\pagebreak
+
+# Load data   
+
+```{r}
+# Load data 
+load(paste0(psfolder,"/Data_Dust_Microbiome_Review.RData"))
+
+data <- Data_Dust_Microbiome_Review@data
+
+str(Data_Dust_Microbiome_Review, max.level = 2)
+```
+
+# Selection of studies
+
+I will create a subset of studies named `subset_studies` that includes only those studies for which the ***microbiome*** is the exposure and ***allergy*** is the outcome.
+
+```{r}
+subset_studies <- data %>% 
+  separate_rows(Determinant, sep = ", ") %>% 
+  separate_rows(Outcome, sep = ", ") %>% 
+  filter(Determinant == "microbiome" & Outcome == "allergies") 
+```
+
+Out of the `r count(data)` entries in `data`, there are **`r count(subset_studies)` studies** meeting the inclusion criteria for mapping into a directed acyclic graph according to the procedure described by [@Ferguson2020].
+
+> Note: Studies where the reverse association (`allergy -> microbiome`) was studied could have also been included in the mapping procedure. However, none of the studies included reported having studied such directionality of association.
+
+# Mapping individual studies into implied graphs
+
+The figures for every graph produced by the subsequent code sourced for every study can be found in the [results folder](https://github.com/javimangal/Dust-Microbiome-Review/tree/main/results/output_figures/implied_graphs).
+
+> Note that the saved figures will have different variable layouts every time they are generated. I have decided not to attach coordinates to variables to simplify the implied graphs' code since the interest at this stage is on the content of the graph rather than visualization.   
+
+\pagebreak
+
+#### Num 1 [@fu2023a]
+
+-   Exposure: microbial richness/concentration
+
+-   Outcome: allergic rhinitis / non-allergic rhinitis symptoms
+
+-   Control variables: **gender**, current **smoking**, and **parental asthma**
+
+-   Other: Effect of **relative humidity** and **dust weight** on rhinitis symptoms is concluded to be *mediated* through the microbiome. 
+
+This is an example of the tables that will be produced for each implied graph to be used in the synthesis phase to produce a DAG.   
+```{r}
+source("implied_graphs/1_fu2023a.R")
+
+edges_1_fu2023 %>% gt %>% 
+  cols_width(
+    Num ~ pct(7),
+    Edge ~ pct(33),
+    Explanation ~ pct(60)
+  ) %>%
+  tab_options(
+    table.width = pct(100)
+  )
+```
+
+\pagebreak
+
+#### Num 9 [@fu2022a]
+
+-   Exposure: microbial richness/ taxa absolute quantity 
+
+-   Outcome: asthma
+
+-   Control variables: **gender**, current **smoking**, and **parental asthma**
+
+-   Other: Effect of **relative humidity**, **indoor CO2**, and **dust weight** on asthma are potentially *mediated* through the microbiome.
+
+```{r}
+#| echo: true
+source("implied_graphs/9_fu2022a.R")
+```
+
+
+#### Num 14 [@cox2022a]
+
+The edges in this graph have been extracted as is from Figure 1 in the paper.
+
+```{r}
+#| echo: true 
+source("implied_graphs/14_cox2022a.R")
+```
+
+By definition, directed acyclic graphs should not contain cycles. Since this DAG is more complex, I will test if it is indeed acyclic. 
+
+```{r}
+#| echo: true
+isAcyclic(ig_14_cox2022a)
+```
+
+\pagebreak
+#### Num 15 [@du2022a]
+
+-   Exposure: 
+
+-   Outcome: 
+
+-   Control variables: 
+
+-   Other: 
+
+```{r}
+
+```
+
+\pagebreak
+#### Num 19 [@fu2021a]
+
+-   Exposure: 
+
+-   Outcome: 
+
+-   Control variables: 
+
+-   Other: 
+
+```{r}
+
+```
+
+\pagebreak
+#### Num 25 [@ta2021a]
+
+-   Exposure: 
+
+-   Outcome: 
+
+-   Control variables: 
+
+-   Other: 
+
+```{r}
+
+```
+
+\pagebreak
+#### Num 27 [@hyytiaeinen2021a]
+
+-   Exposure: 
+
+-   Outcome: 
+
+-   Control variables: 
+
+-   Other: 
+
+```{r}
+
+```
+
+\pagebreak
+#### Num 32 [@vandenborght2021a]
+
+-   Exposure: 
+
+-   Outcome: 
+
+-   Control variables: 
+
+-   Other: 
+
+```{r}
+
+```
+
+\pagebreak
+#### Num 33 [@adams2021a]
+
+-   Exposure: 
+
+-   Outcome: 
+
+-   Control variables: 
+
+-   Other: 
+
+```{r}
+
+```
+
+\pagebreak
+#### Num 35 [@fu2021e]
+
+-   Exposure: 
+
+-   Outcome: 
+
+-   Control variables: 
+
+-   Other: 
+
+```{r}
+
+```
+
+\pagebreak
+#### Num 37 [@fu2020a]
+
+-   Exposure: 
+
+-   Outcome: 
+
+-   Control variables: 
+
+-   Other: 
+
+```{r}
+
+```
+
+\pagebreak
+#### Num 38 [@j2020a]
+
+-   Exposure: 
+
+-   Outcome: 
+
+-   Control variables: 
+
+-   Other: 
+
+```{r}
+
+```
+
+\pagebreak
+#### Num 49 [@karvonen2019a]
+
+-   Exposure: 
+
+-   Outcome: 
+
+-   Control variables: 
+
+-   Other: 
+
+```{r}
+
+```
+
+\pagebreak
+#### Num 53 [@o2018a]
+
+-   Exposure: 
+
+-   Outcome: 
+
+-   Control variables: 
+
+-   Other: 
+
+```{r}
+
+```
+
+\pagebreak
+#### Num 65 [@tischer2016a]
+
+-   Exposure: 
+
+-   Outcome: 
+
+-   Control variables: 
+
+-   Other: 
+
+```{r}
+
+```
+
+\pagebreak
+#### Num 73 [@dannemiller2016b]
+
+-   Exposure: 
+
+-   Outcome: 
+
+-   Control variables: 
+
+-   Other: 
+
+```{r}
+
+```
+
+\pagebreak
+#### Num 94 [@lee-a]
+
+-   Exposure: 
+
+-   Outcome: 
+
+-   Control variables: 
+
+-   Other: 
+
+```{r}
+
+```
+
+\pagebreak
+#### Num 118 [@valkonen2018a]
+
+-   Exposure: 
+
+-   Outcome: 
+
+-   Control variables: 
+
+-   Other: 
+
+```{r}
+
+```
+
+\pagebreak
+#### Num 127 [@dannemiller2014a]
+
+-   Exposure: 
+
+-   Outcome: 
+
+-   Control variables: 
+
+-   Other: 
+
+```{r}
+
+```
+
+\pagebreak
+#### Num 130 [@johansson2013a]
+
+-   Exposure: 
+
+-   Outcome: 
+
+-   Control variables: 
+
+-   Other: 
+
+```{r}
+
+```
+
+\pagebreak
+#### Num 132 [@ege2012a]
+
+-   Exposure: 
+
+-   Outcome: 
+
+-   Control variables: 
+
+-   Other: 
+
+```{r}
+
+```
+
+\pagebreak
+#### Num 134 [@ege2011a]
+
+-   Exposure: 
+
+-   Outcome: 
+
+-   Control variables: 
+
+-   Other: 
+
+```{r}
+
+```
+
+\pagebreak
+#### Num 137 [@maier2010a]
+
+-   Exposure: 
+
+-   Outcome: 
+
+-   Control variables: 
+
+-   Other: 
+
+```{r}
+
+```
+
+\pagebreak
+
+# Package references
+
+```{r}
+#| include: false
+report::cite_packages(session)
+```
+
+```{r}
+#| include: false  
+# Run this chunk if you wish to clear your environment and unload packages.
+
+rm(list = ls())
+pacman::p_unload(negate = TRUE)
+
+```
