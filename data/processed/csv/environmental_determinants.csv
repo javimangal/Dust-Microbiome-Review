@@ -82,6 +82,7 @@
 15,"humidity","humidity/dampness"
 15,"dampness","humidity/dampness"
 15,"mold","mold"
+15,"indoor CO2","air pollutants"
 16,"age of building","building characteristics"
 16,"altitude","geography"
 16,"proximity to green areas","green environment"

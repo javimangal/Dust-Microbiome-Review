@@ -1,7 +1,7 @@
 #### Implied graph code #### 
 
 ig_14_cox2022a <- dagitty(
-  'dag {
+'dag {
 dust_microbiome [exposure]
 allergy [outcome]
 dust_microbiome -> allergy
@@ -38,7 +38,7 @@ edges_14_cox2022a <- edges(ig_14_cox2022a) %>%
     Num = 14,
     Edge = paste(v,e,w)
   ) %>% 
-  select(Num, Edge)
+  select(-c(x,y))
 
 #### Log explanations #### 
 edges_14_cox2022a <- edges_14_cox2022a %>% 
@@ -53,6 +53,6 @@ edges_14_cox2022a <- edges_14_cox2022a %>%
 #### Save implied graph #### 
 
 jpeg(filename=paste0(figfolder,"/ig_14_cox2022a.jpg"),
-     width=4, height=4, units="in", res=300)
+     width=7, height=6, units="in", res=300)
 plot(ig_14_cox2022a)
 dev.off()

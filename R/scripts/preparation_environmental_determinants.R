@@ -293,6 +293,14 @@ categories <- categories %>%
   )
 
 # Save gt table 
+## html 
+gtsave(
+  categories,
+  filename = "html/categories_environmental_determinants.html",
+  path = tabfolder
+)
+
+## word document 
 doc <- read_docx()
 doc <- body_add_gt(doc, value = categories)
 print(

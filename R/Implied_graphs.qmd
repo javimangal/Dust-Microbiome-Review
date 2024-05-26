@@ -4,6 +4,7 @@ subtitle: "Indoor dust microbiome (exposure) and allergic diseases (outcome)"
 author: 
   - "Javier Mancilla Galindo, MSc student"
   - "Supervisors: Inge Wouters and Alex Bossers"
+  - "Examiner: Lidwien Smit"
 date: today
 execute: 
   echo: false
@@ -30,12 +31,11 @@ if (!require("pacman", quietly = TRUE)) {
 }
 
 pacman::p_load(
-  tidyverse,
-  readxl,
-  dagitty,
-  table1,
-  gt,
-  report
+  tidyverse,   # Used for basic data handling and visualization.
+  dagitty,     # Used to produce implied graphs and hypothetical DAG, and to 
+               # analyze properties of such graphs. 
+  gt,          # Print and save html tables.
+  report       # Used to generate package citations in markdown format.
 )
 
 ```
@@ -99,7 +99,7 @@ The figures for every graph produced by the subsequent code sourced for every st
 
 \pagebreak
 
-#### Num 1 [@fu2023a]
+### Num 1 [@fu2023a]
 
 -   Exposure: microbial richness/concentration
 
@@ -114,6 +114,9 @@ This is an example of the tables that will be produced for each implied graph to
 source("implied_graphs/1_fu2023a.R")
 
 edges_1_fu2023 %>% gt %>% 
+  cols_hide(
+    columns = c(v,w,e)
+  ) %>% 
   cols_width(
     Num ~ pct(7),
     Edge ~ pct(33),
@@ -126,7 +129,7 @@ edges_1_fu2023 %>% gt %>%
 
 \pagebreak
 
-#### Num 9 [@fu2022a]
+### Num 9 [@fu2022a]
 
 -   Exposure: microbial richness/ taxa absolute quantity 
 
@@ -142,7 +145,7 @@ source("implied_graphs/9_fu2022a.R")
 ```
 
 
-#### Num 14 [@cox2022a]
+### Num 14 [@cox2022a]
 
 The edges in this graph have been extracted as is from Figure 1 in the paper.
 
@@ -158,8 +161,166 @@ By definition, directed acyclic graphs should not contain cycles. Since this DAG
 isAcyclic(ig_14_cox2022a)
 ```
 
+### Num 15 [@du2022a]
+
+-   Exposure: airborne fungal concentration 
+
+-   Outcome: asthma / wheeze / allergic rhinitis / eczema  
+
+-   Control variables: gender, age, urbanicity, and genetic disorders in family 
+
+-   Other: Concluded that allergy is related to season and humidity, whereas indoor fungal microbiome is correlated with season, humidity, temperature, indoor CO2, and the outdoor microbiome. 
+
+```{r}
+#| echo: true
+source("implied_graphs/15_du2022a.R")
+```
+
 \pagebreak
-#### Num 15 [@du2022a]
+### Num 19 [@fu2021a]
+
+-   Exposure: bacterial richness / bacterial genera 
+
+-   Outcome: asthma (self-administered questionnaire, supervised by healthcare professionals)
+
+-   Control variables: **gender**, current **smoking**, and **parental asthma**
+
+-   Other: plants in room, location in building, age of building, and wall surface type were associated with indoor microbiome. These characteristics were not associated with asthma. 
+
+```{r}
+#| echo: true
+source("implied_graphs/19_fu2021a.R")
+```
+
+### Num 25 [@ta2021a]
+
+-   Exposure: bacterial relative abundance 
+
+-   Outcome: early life eczema
+
+-   Control variables: None
+
+-   Other: None of the conclusions support other variables to include in graph. 
+
+```{r}
+#| echo: true
+source("implied_graphs/25_ta2021a.R")
+```
+
+### Num 27 [@hyytiaeinen2021a]
+
+-   Exposure: Bacterial richness 
+
+-   Outcome: Inhalant atopy (sensitization against at least one of the 13 or 8 tested specific inhalant allergens) / allergic rhinitis at 10-1.5 years.  
+
+-   Control variables: gender, parental atopy (either mother or father reporting asthma, eczema or hay fever, if at least one of the parents were answered the question) and number of older siblings in both cohorts, maternal education, living on a farm and cohort in LUKAS; and parental education (the highest level of either parent) and study center in LISA. season of dust sampling in both cohorts; the number of different pet species indoors in LUKAS; and age of the mother during delivery in LISA. 
+
+-   Other: None
+
+```{r}
+#| echo: true
+source("implied_graphs/27_hyytiaeinen2021a.R")
+```
+
+\pagebreak
+### Num 32 [@vandenborght2021a]
+
+-   Exposure: diversity, abundance 
+
+-   Outcome: severe asthma endotype (T2-high vs T2-low) / asthma exacerbation. 
+
+-   Control variables: None declared. 
+
+-   Other: None declared. 
+
+```{r}
+#| echo: true
+source("implied_graphs/32_vandenborght2021a.R")
+```
+
+### Num 33 [@adams2021a]
+
+-   Exposure: bacterial/fungal diversity, richness, individual taxa. Additionally, moisture damage of schools was an exposure of interest. 
+
+-   Outcome: respiratory symptoms: wheeze, nocturnal dry cough, and rhinitis, on questionnaire administered 2 months **before** exposure assessment. 
+
+-   Control variables: gender, age, moisture damage in home (note that this is different to moisture damage in school, where samples were taken), educational level 
+
+-   Other: endotoxin and microbial taxa mediate 30% of the effect of moisture damage in school on respiratory symptoms. 
+
+```{r}
+#| echo: true
+source("implied_graphs/33_adams2021a.R")
+```
+
+### Num 35 [@fu2021e]
+
+-   Exposure: microbial richness/abundance
+
+-   Outcome: asthma / wheezing, / rhinitis / rhinoconjunctivitis 
+
+-   Control variables: smoking, gender, parental_allergies
+
+-   Other: urbanicity related to dust microbiome and allergy. Effect of dust microbiome could occur through metabolism-related genes and immune-related mechanisms. 
+
+```{r}
+#| echo: true
+source("implied_graphs/35_fu2021e.R")
+```
+
+\pagebreak
+### Num 37 [@fu2020a]
+
+-   Exposure: richness / taxa 
+
+-   Outcome: history of asthma / asthma 
+
+-   Control variables: smoking, gender, parental_allergies
+
+-   Other:  indoor dampness/ visible mold (I will record this as humidity), which did not associate with microbial community variation, was associated with the asthma-associated bacteria. Other environmental characteristics in this study were not significantly associated. 
+
+```{r}
+#| echo: true
+source("implied_graphs/37_fu2020a.R")
+```
+
+### Num 38 [@j2020a]
+
+-   Exposure: bacterial and fungal taxa 
+
+-   Outcome: household with inhabitants with an asthma diagnosis
+
+-   Control variables: Not reported 
+
+-   Other: No additional statements 
+
+```{r}
+#| echo: true
+source("implied_graphs/38_j2020a.R")
+```
+
+### Num 49 [@karvonen2019a]
+
+-   Exposure: richness / diversity / taxa
+
+-   Outcome: asthma / respiratory symptoms / wheezing phenotypes
+
+-   Control variables: living on a farm, maternal history of allergic diseases, sex, number of older siblings, and smoking during pregnancy. Study cohort and time were additional adjustment variables which I will not include in DAG since I believe these are typical variables of control due to the study design. 
+
+-   Other: increased animal contacts, natural as opposed to mechanical ventilation and timber structures were associated with increase in asthma protection associated microbes and with decrease in the asthma predisposing Lactococcus abundance. 
+
+```{r}
+#| echo: true
+source("implied_graphs/49_karvonen2019a.R")
+```
+
+```{r}
+#| eval: false 
+
+# Work not yet completed to ignore when rendering
+
+\pagebreak
+### Num 53 [@o2018a]
 
 -   Exposure: 
 
@@ -169,12 +330,9 @@ isAcyclic(ig_14_cox2022a)
 
 -   Other: 
 
-```{r}
-
-```
 
 \pagebreak
-#### Num 19 [@fu2021a]
+### Num 65 [@tischer2016a]
 
 -   Exposure: 
 
@@ -184,12 +342,9 @@ isAcyclic(ig_14_cox2022a)
 
 -   Other: 
 
-```{r}
-
-```
 
 \pagebreak
-#### Num 25 [@ta2021a]
+### Num 73 [@dannemiller2016b]
 
 -   Exposure: 
 
@@ -199,12 +354,9 @@ isAcyclic(ig_14_cox2022a)
 
 -   Other: 
 
-```{r}
-
-```
 
 \pagebreak
-#### Num 27 [@hyytiaeinen2021a]
+### Num 94 [@lee-a]
 
 -   Exposure: 
 
@@ -214,12 +366,9 @@ isAcyclic(ig_14_cox2022a)
 
 -   Other: 
 
-```{r}
-
-```
 
 \pagebreak
-#### Num 32 [@vandenborght2021a]
+### Num 118 [@valkonen2018a]
 
 -   Exposure: 
 
@@ -229,12 +378,9 @@ isAcyclic(ig_14_cox2022a)
 
 -   Other: 
 
-```{r}
-
-```
 
 \pagebreak
-#### Num 33 [@adams2021a]
+### Num 127 [@dannemiller2014a]
 
 -   Exposure: 
 
@@ -244,12 +390,9 @@ isAcyclic(ig_14_cox2022a)
 
 -   Other: 
 
-```{r}
-
-```
 
 \pagebreak
-#### Num 35 [@fu2021e]
+### Num 130 [@johansson2013a]
 
 -   Exposure: 
 
@@ -259,12 +402,9 @@ isAcyclic(ig_14_cox2022a)
 
 -   Other: 
 
-```{r}
-
-```
 
 \pagebreak
-#### Num 37 [@fu2020a]
+### Num 132 [@ege2012a]
 
 -   Exposure: 
 
@@ -274,12 +414,9 @@ isAcyclic(ig_14_cox2022a)
 
 -   Other: 
 
-```{r}
-
-```
 
 \pagebreak
-#### Num 38 [@j2020a]
+### Num 134 [@ege2011a]
 
 -   Exposure: 
 
@@ -289,12 +426,9 @@ isAcyclic(ig_14_cox2022a)
 
 -   Other: 
 
-```{r}
-
-```
 
 \pagebreak
-#### Num 49 [@karvonen2019a]
+### Num 137 [@maier2010a]
 
 -   Exposure: 
 
@@ -304,159 +438,51 @@ isAcyclic(ig_14_cox2022a)
 
 -   Other: 
 
-```{r}
 
 ```
 
 \pagebreak
-#### Num 53 [@o2018a]
-
--   Exposure: 
-
--   Outcome: 
-
--   Control variables: 
-
--   Other: 
+# Join edges tables and assess characteristics 
 
 ```{r}
-
+source("scripts/edges_implied_graphs.R")
 ```
 
-\pagebreak
-#### Num 65 [@tischer2016a]
+So far, I have assessed **`r length( unique(combined_edges$Num) )`** out of the **`r count(subset_studies)` studies** studies included for the DAG mapping. 
 
--   Exposure: 
+This procedure produced a total of **`r count(combined_edges)`** edges. 
 
--   Outcome: 
+The number of edges after de-duplication is: 
+```{r}
+combined_edges %>% 
+  select(v,w) %>% 
+  unique() %>% 
+  count() %>% 
+  gt
+```
 
--   Control variables: 
-
--   Other: 
 
 ```{r}
-
+nodes <- unique(
+  c(combined_edges$v, combined_edges$w)
+  )
 ```
+The number of variables (nodes) present is **`r length(nodes)`**.    
 
-\pagebreak
-#### Num 73 [@dannemiller2016b]
+If I were to only assess relationships between every variable with the exposure and outcome, ignoring all relationships between covariates, I would need to assess **`r (length(nodes)-2)*2` edges**.  
 
--   Exposure: 
-
--   Outcome: 
-
--   Control variables: 
-
--   Other: 
-
+How many edges would I need to assess to produce a saturated DAG? 
 ```{r}
+random_DAG <- randomDAG(
+  N = length(nodes),
+  p = 0.5
+)
 
+plot(random_DAG)
 ```
 
-\pagebreak
-#### Num 94 [@lee-a]
+This hypothetical DAG with the same number of variables contains **`r count(edges(random_DAG))`** edges that I would need to assess individually. 
 
--   Exposure: 
-
--   Outcome: 
-
--   Control variables: 
-
--   Other: 
-
-```{r}
-
-```
-
-\pagebreak
-#### Num 118 [@valkonen2018a]
-
--   Exposure: 
-
--   Outcome: 
-
--   Control variables: 
-
--   Other: 
-
-```{r}
-
-```
-
-\pagebreak
-#### Num 127 [@dannemiller2014a]
-
--   Exposure: 
-
--   Outcome: 
-
--   Control variables: 
-
--   Other: 
-
-```{r}
-
-```
-
-\pagebreak
-#### Num 130 [@johansson2013a]
-
--   Exposure: 
-
--   Outcome: 
-
--   Control variables: 
-
--   Other: 
-
-```{r}
-
-```
-
-\pagebreak
-#### Num 132 [@ege2012a]
-
--   Exposure: 
-
--   Outcome: 
-
--   Control variables: 
-
--   Other: 
-
-```{r}
-
-```
-
-\pagebreak
-#### Num 134 [@ege2011a]
-
--   Exposure: 
-
--   Outcome: 
-
--   Control variables: 
-
--   Other: 
-
-```{r}
-
-```
-
-\pagebreak
-#### Num 137 [@maier2010a]
-
--   Exposure: 
-
--   Outcome: 
-
--   Control variables: 
-
--   Other: 
-
-```{r}
-
-```
 
 \pagebreak
 
@@ -466,6 +492,24 @@ isAcyclic(ig_14_cox2022a)
 #| include: false
 report::cite_packages(session)
 ```
+
+  - Grolemund G, Wickham H (2011). “Dates and Times Made Easy with lubridate.” _Journal of Statistical Software_, *40*(3), 1-25. <https://www.jstatsoft.org/v40/i03/>.
+  - Iannone R, Cheng J, Schloerke B, Hughes E, Lauer A, Seo J (2024). _gt: Easily Create Presentation-Ready Display Tables_. R package version 0.10.1, <https://CRAN.R-project.org/package=gt>.
+  - Makowski D, Lüdecke D, Patil I, Thériault R, Ben-Shachar M, Wiernik B (2023). “Automated Results Reporting as a Practical Tool to Improve Reproducibility and Methodological Best Practices Adoption.” _CRAN_. <https://easystats.github.io/report/>.
+  - Müller K, Wickham H (2023). _tibble: Simple Data Frames_. R package version 3.2.1, <https://CRAN.R-project.org/package=tibble>.
+  - R Core Team (2024). _R: A Language and Environment for Statistical Computing_. R Foundation for Statistical Computing, Vienna, Austria. <https://www.R-project.org/>.
+  - Rinker TW, Kurkiewicz D (2018). _pacman: Package Management for R_. version 0.5.0, <http://github.com/trinker/pacman>.
+  - Textor J, van der Zander B, Gilthorpe MS, Liśkiewicz M, Ellison GT (2016). “Robust causal inference using directed acyclic graphs: the R package 'dagitty'.” _International Journal of Epidemiology_, *45*(6), 1887-1894. doi:10.1093/ije/dyw341 <https://doi.org/10.1093/ije/dyw341>.
+  - Wickham H (2016). _ggplot2: Elegant Graphics for Data Analysis_. Springer-Verlag New York. ISBN 978-3-319-24277-4, <https://ggplot2.tidyverse.org>.
+  - Wickham H (2023). _forcats: Tools for Working with Categorical Variables (Factors)_. R package version 1.0.0, <https://CRAN.R-project.org/package=forcats>.
+  - Wickham H (2023). _stringr: Simple, Consistent Wrappers for Common String Operations_. R package version 1.5.1, <https://CRAN.R-project.org/package=stringr>.
+  - Wickham H, Averick M, Bryan J, Chang W, McGowan LD, François R, Grolemund G, Hayes A, Henry L, Hester J, Kuhn M, Pedersen TL, Miller E, Bache SM, Müller K, Ooms J, Robinson D, Seidel DP, Spinu V, Takahashi K, Vaughan D, Wilke C, Woo K, Yutani H (2019). “Welcome to the tidyverse.” _Journal of Open Source Software_, *4*(43), 1686. doi:10.21105/joss.01686 <https://doi.org/10.21105/joss.01686>.
+  - Wickham H, François R, Henry L, Müller K, Vaughan D (2023). _dplyr: A Grammar of Data Manipulation_. R package version 1.1.4, <https://CRAN.R-project.org/package=dplyr>.
+  - Wickham H, Henry L (2023). _purrr: Functional Programming Tools_. R package version 1.0.2, <https://CRAN.R-project.org/package=purrr>.
+  - Wickham H, Hester J, Bryan J (2024). _readr: Read Rectangular Text Data_. R package version 2.1.5, <https://CRAN.R-project.org/package=readr>.
+  - Wickham H, Vaughan D, Girlich M (2024). _tidyr: Tidy Messy Data_. R package version 1.3.1, <https://CRAN.R-project.org/package=tidyr>.
+
+# References studies 
 
 ```{r}
 #| include: false  

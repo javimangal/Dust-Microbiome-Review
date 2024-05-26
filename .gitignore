@@ -1,5 +1,5 @@
 # Data
-/data/temp
+/data/temp/*.xlsx
 /data/raw
 
 # History files
@@ -55,12 +55,13 @@ docs/manuscript/*.docx
 docs/manuscript/*.qmd
 docs/manuscript/*.pdf
 docs/manuscript/*.tmp
+docs/reports/*.docx
 
 # Powerpoint presentations
-docs/presentations
+docs/presentations/*.pptx
 
-# Results output_figures (in process)
-results/output_figures
+# html tables (used to source into rendered file)
+results/output_tables/html
 
 # translation temp files
 po/*~

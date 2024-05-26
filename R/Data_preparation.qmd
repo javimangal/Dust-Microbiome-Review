@@ -4,6 +4,7 @@ subtitle: "Indoor dust bacterial and fungal microbiota composition and allergic 
 author: 
   - "Javier Mancilla Galindo, MSc student"
   - "Supervisors: Inge Wouters and Alex Bossers"
+  - "Examiner: Lidwien Smit"
 date: today
 execute: 
   echo: false
@@ -27,15 +28,15 @@ if (!require("pacman", quietly = TRUE)) {
   install.packages("pacman")
 }
 pacman::p_load(
-  tidyverse, # Basic data handling. 
-  readxl, # Import data in .xlsx format.
-  table1, # Used for column labeling.
-  maps, # Used to retrieve ISO3 codes for countries.
-  haven, # Export data into different formats.
-  report, # Used to generate package citations in markdown format.
-  officer, # Export tables
-  gto, # Add gt table to a word document. 
-  gt # Print html tables.
+  tidyverse,  # Basic data wrangling.   
+  readxl,     # Import data in xlsx format.
+  table1,     # Used for column labeling.
+  maps,       # Used to retrieve ISO3 codes for countries.
+  haven,      # Export data into different formats.
+  report,     # Used to generate package citations in markdown format.
+  officer,    # Export tables
+  gto,        # Add gt table to a word document. 
+  gt          # Print and save html tables.
 )
 
 ```
@@ -207,6 +208,19 @@ table1::label(collectors$Dust_collector) <- "Dust sample collector"
 
 `collectors` has `r count(collectors)` rows and and `r length(collectors)` columns. 
 
+### Buildings dataframe  
+
+```{r}
+buildings <- data %>% 
+  select(Num, Building) %>%
+  separate_rows(Building, sep = ", ")
+
+table1::label(buildings$Building) <- "Type of building"
+```
+
+`buildings` has `r count(buildings)` rows and and `r length(buildings)` columns. 
+
+
 ### Environmental determinants dataframe  
 
 I will filter only studies that reported environmental characteristics and exclude study number 69 since this study reports 668 environmental determinants [@pakpour2016a], which would be very challenging to summarize in a way that is comparable to other studies included in this review. 
@@ -253,6 +267,7 @@ setClass(
   slots = list(data = "data.frame",
                countries = "data.frame",
                collectors = "data.frame",
+               buildings = "data.frame",
                environmental_determinants = "data.frame",
                references = "data.frame")
   )
@@ -261,7 +276,8 @@ Data_Dust_Microbiome_Review <- new(
   "DataFrameCollection", 
   data = data,
   countries = countries,
-  collectors = collectors, 
+  collectors = collectors,
+  buildings = buildings,
   environmental_determinants = environmental_determinants,
   references = references
   )
@@ -291,6 +307,8 @@ write.csv(countries, file.path(csv_folder, "countries.csv"),
           row.names = FALSE)
 write.csv(collectors, file.path(csv_folder, "collectors.csv"), 
           row.names = FALSE)
+write.csv(buildings, file.path(csv_folder, "buildings.csv"), 
+          row.names = FALSE)
 write.csv(environmental_determinants, 
           file.path(csv_folder, "environmental_determinants.csv"), 
           row.names = FALSE)
@@ -308,7 +326,8 @@ data <- data %>%
     -c(
       Environ_specify, 
       Country, 
-      Dust_collector
+      Dust_collector,
+      Building
       )
     )
 ```
@@ -323,6 +342,7 @@ dir.create(sav_folder, showWarnings = FALSE, recursive = TRUE)
 write_sav(data, file.path(sav_folder, "main_data.sav"))
 write_sav(countries, file.path(sav_folder, "countries.sav"))
 write_sav(collectors, file.path(sav_folder, "collectors.sav"))
+write_sav(buildings, file.path(sav_folder, "buildings.sav"))
 write_sav(environmental_determinants, 
           file.path(sav_folder, "environmental_determinants.sav"))
 ```
@@ -338,6 +358,7 @@ dir.create(xpt_folder, showWarnings = FALSE, recursive = TRUE)
 write_xpt(data, file.path(xpt_folder, "main_data.xpt"))
 write_xpt(countries, file.path(xpt_folder, "countries.xpt"))
 write_xpt(collectors, file.path(xpt_folder, "collectors.xpt"))
+write_xpt(buildings, file.path(xpt_folder, "buildings.xpt"))
 write_xpt(environmental_determinants, 
           file.path(xpt_folder, "environmental_determinants.xpt"))
 ```
@@ -352,6 +373,7 @@ dir.create(dta_folder, showWarnings = FALSE, recursive = TRUE)
 write_dta(data, file.path(dta_folder, "main_data.dta"))
 write_dta(countries, file.path(dta_folder, "countries.dta"))
 write_dta(collectors, file.path(dta_folder, "collectors.dta"))
+write_dta(buildings, file.path(dta_folder, "buildings.dta"))
 write_dta(environmental_determinants, 
           file.path(dta_folder, "environmental_determinants.dta"))
 ```

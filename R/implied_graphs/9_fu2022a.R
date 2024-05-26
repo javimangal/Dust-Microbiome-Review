@@ -24,7 +24,7 @@ edges_9_fu2022a <- edges(ig_9_fu2022a) %>%
     Num = 9,
     Edge = paste(v,e,w)
   ) %>% 
-  select(Num, Edge)
+  select(-c(x,y))
 
 #### Log explanations #### 
 edges_9_fu2022a <- edges_9_fu2022a %>% 
@@ -40,13 +40,13 @@ edges_9_fu2022a <- edges_9_fu2022a %>%
         Edge == "parental_asthma -> dust_microbiome" ~ "adjusted for parental_asthma",
         Edge == "humidity -> dust_microbiome" ~ "effect of humidity potentially mediated through dust microbiome",
         Edge == "dust_weight -> dust_microbiome" ~ "effect of dust weight potentially mediated through dust microbiome",
-        Edge == "indoor_CO2 -> dust_microbiome" ~ "effect of indoor CO2 potentially mediated through dust microbiome",
+        Edge == "indoor_CO2 -> dust_microbiome" ~ "effect of indoor CO2 potentially mediated through dust microbiome"
       )
   )
 
 #### Save implied graph #### 
 
 jpeg(filename=paste0(figfolder,"/ig_9_fu2022a.jpg"),
-     width=4, height=4, units="in", res=300)
+     width=5, height=4, units="in", res=300)
 plot(ig_9_fu2022a)
 dev.off()
