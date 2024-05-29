@@ -271,7 +271,7 @@ countries_counts <-
   countries %>% 
   group_by(Country) %>% 
   summarize(n = n()) %>% 
-  mutate(Percentage = round(n/(total_studies-5)*100,2) )
+  mutate(Percentage = round(n/sum(n)*100,2) )
 
 countries_counts %>% arrange(desc(n)) %>% gt
 ``` 
@@ -297,6 +297,7 @@ plot_map
 table_regions %>% gt
 ```
 
+
 ```{r}
 #| include: false
 rm(mapdata, mapfig, plot_map, table_regions, Figure_Map_Regions, countries_counts)
@@ -309,7 +310,7 @@ rm(mapdata, mapfig, plot_map, table_regions, Figure_Map_Regions, countries_count
 countries %>% 
   group_by(Income) %>% 
   summarize(n = n()) %>% 
-  mutate(Percentage = round(n/(total_studies-5)*100,1) ) %>% 
+  mutate(Percentage = round(n/sum(n)*100,1) ) %>% 
   arrange(desc(n)) %>% 
   gt
 ```
@@ -509,4 +510,3 @@ pacman::p_unload(negate = TRUE)
 
 ```
 
-# References studies

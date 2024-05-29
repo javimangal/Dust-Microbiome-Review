@@ -34,6 +34,7 @@ pacman::p_load(
   tidyverse,   # Used for basic data handling and visualization.
   dagitty,     # Used to produce implied graphs and hypothetical DAG, and to 
                # analyze properties of such graphs. 
+  DiagrammeR,  # Used to plot example DAG of study Num 1
   gt,          # Print and save html tables.
   report       # Used to generate package citations in markdown format.
 )
@@ -108,6 +109,37 @@ The figures for every graph produced by the subsequent code sourced for every st
 -   Control variables: **gender**, current **smoking**, and **parental asthma**
 
 -   Other: Effect of **relative humidity** and **dust weight** on rhinitis symptoms is concluded to be *mediated* through the microbiome. 
+
+The implied graph would have the following appearance: 
+```{r}
+grViz("digraph {
+  graph []
+  node [shape = plaintext]
+    A [label = 'dust weight']
+    B [label = 'humidity']
+    E [label = 'dust microbiome']
+    O [label = 'allergy']
+    C1 [label = 'parental asthma']
+    C2 [label = 'gender']
+    C3 [label = 'smoking']
+  edge []
+    E->O
+    A->E
+    B->E
+    C1->E
+    C1->O
+    C2->E
+    C2->O
+    C3->E
+    C3->O
+  { rank = same; A; B }
+  { rank = same; E }
+  { rank = same; C1; C2; C3 }
+  { rank = same; O }
+}
+")
+```
+
 
 This is an example of the tables that will be produced for each implied graph to be used in the synthesis phase to produce a DAG.   
 ```{r}

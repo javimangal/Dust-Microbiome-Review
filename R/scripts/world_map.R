@@ -51,7 +51,7 @@ ggsave("Figure_Map.png",
 table_regions <- countries %>% 
   group_by(Region) %>% 
   summarize(n = n()) %>% 
-  mutate(Percentage = round(n/(total_studies-5)*100,1) ) %>% 
+  mutate(Percentage = round(n/sum(n)*100,1) ) %>% 
   arrange(desc(n)) 
 
 # Arrange in same figure and save: 

@@ -1,0 +1,220 @@
+---
+title: "Studies citing ESC-DAG method"
+subtitle: "Indoor dust bacterial and fungal microbiota composition and allergic diseases: a scoping review"
+author: 
+  - "Javier Mancilla Galindo, MSc student"
+  - "Supervisors: Inge Wouters and Alex Bossers"
+  - "Examiner: Lidwien Smit"
+date: today
+execute: 
+  echo: false
+  warning: false
+toc: true
+format:
+  pdf:
+    documentclass: scrartcl
+  docx:
+    highlight-style: github
+bibliography: ../docs/manuscript/references-dust-microbiome-review.bib
+csl: ../docs/manuscript/environment-international.csl
+editor: source
+---
+
+\pagebreak
+
+# Packages and session information
+
+```{r}
+#| echo: true 
+if (!require("pacman", quietly = TRUE)) {
+  install.packages("pacman")
+}
+
+pacman::p_load(
+  tidyverse,    # Used for basic data handling and visualization.
+  table1,       # Used for column labeling.
+  readxl,       # Import data in xlsx format.
+  gt,           # Print and save html tables.
+  report        # Used to generate package citations in markdown format. 
+)
+
+```
+
+```{r}
+# Credits chunk of code: Alex Bossers, Utrecht University
+
+psfolder <- "../data/processed"
+figfolder <- "../results/output_figures"
+tabfolder <- "../results/output_tables"
+dir.create(psfolder, showWarnings = FALSE)
+dir.create(figfolder, showWarnings = FALSE)
+dir.create(tabfolder, showWarnings = FALSE)
+
+session <- sessionInfo()
+# remove clutter
+session$BLAS <- NULL
+session$LAPACK <- NULL
+session$loadedOnly <- NULL
+
+# write log file
+writeLines(
+  capture.output(print(session, locale = FALSE)),
+  paste0("sessions/",lubridate::today(), "_session_ESC_DAG_cited_by.txt")
+)
+
+session
+```
+
+\pagebreak
+
+
+```{r}
+# Load data
+cited_by <- read_excel(
+  paste0(psfolder,"/PubMed_citedby_25052024.xlsx"),
+  na = "NA"
+  )
+```
+
+```{r}
+# Add labels 
+table1::label(cited_by$used_DAG) <- "Used DAG"
+table1::label(cited_by$shows_DAG) <- "Showed DAG"
+table1::label(cited_by$code_DAG) <- "DAG code"
+table1::label(cited_by$documented_DAG) <- "Documentation of DAG"
+table1::label(cited_by$PICO_question) <- "PICO/PECO question followed"
+```
+
+
+# Description
+
+A list of papers citing the ESC-DAG method [@Ferguson2020] were [retrieved from PubMed](https://pubmed.ncbi.nlm.nih.gov/?linkname=pubmed_pubmed_citedin&from_uid=31325312) on 25/05/2024, yielding a total of `r count(cited_by)` records. Of these, only `r cited_by %>% filter(Publication_Year >2022) %>% count` papers published between 2023 and 2024 were assessed in order to focus on the most recent applications of this method.
+
+```{r}
+data <- cited_by %>% 
+  filter(Publication_Year >2022) 
+```
+
+Only `r data %>% filter(is.na(Exclude)) %>% count` studies that explicitly declared having used this method were included for analysis. Thus, `r data %>% filter(!is.na(Exclude)) %>% count` studies were excluded for the following reasons:
+
+```{r}
+data %>% 
+  group_by(Exclude) %>% 
+  summarize(n=n()) %>% 
+  slice(-4) %>% 
+  gt
+```
+
+Studies included: [@Peng2024; @Liao2024; @Antonsen2024; @Prieto2024; @Liu2023; @Zhu2023; @Xiang2024; @Corona2024; @Lock2023; @Ghazal2023; @Riseberg2023; @Li2023a; @Campbell2023; @Guivarch2023; @Lewis2023]
+
+```{r}
+data <- data %>% filter(is.na(Exclude))
+```
+
+The full text, including main manuscript, supplementary material, and associated repositories were reviewed for the following characteristics which were assessed and recorded:
+
+| Characteristic              | Definition                                                                                          | Possible values                         |
+|-----------------------------|-----------------------------------------------------------------------------------------------------|-----------------------------------------|
+| Used DAG                    | Explicit mention of having used a DAG to guide study design/analysis                                | no; yes                                 |
+| Showed DAG                  | Presentation of a visual graphic or code for reproduction of graph in a visual display program.     | no; yes                                 |
+| DAG code                    | Presentation of code for reproduction of DAG                                                        | no; yes                                 |
+| Documentation of DAG        | Documentation of all steps for the production of DAG, as suggested by [@Ferguson2020]               | no; partial; yes                        |
+| PICO/PECO question followed | Explicit mention of having followed a PICO/PECO question for retrieving papers for DAG construction | unknown; yes; other (i.e., PO question) |
+
+\pagebreak
+
+# Results 
+
+## Used DAG 
+```{r}
+data %>% 
+  group_by(used_DAG) %>% 
+  summarize(n=n()) %>% 
+  mutate(Percentage = round((n/sum(n)*100),1)) %>% 
+  gt
+```
+
+## Showed DAG
+```{r}
+data %>% 
+  group_by(shows_DAG) %>% 
+  summarize(n=n()) %>% 
+  mutate(Percentage = round((n/sum(n)*100),1)) %>% 
+  gt
+```
+
+Studies that presented a DAG: [@Peng2024; @Antonsen2024; @Prieto2024; @Liu2023; @Zhu2023; @Xiang2024; @Lock2023; @Ghazal2023; @Riseberg2023; @Li2023a; @Campbell2023; @Lewis2023]
+
+## DAG code
+```{r}
+data %>% 
+  group_by(code_DAG) %>% 
+  summarize(n=n()) %>% 
+  mutate(Percentage = round((n/sum(n)*100),1)) %>% 
+  gt
+```
+
+Studies presenting DAG code: [@Peng2024; @Antonsen2024; @Riseberg2023]
+
+## Documentation of DAG
+```{r}
+data %>% 
+  group_by(documented_DAG) %>% 
+  summarize(n=n()) %>% 
+  mutate(Percentage = round((n/sum(n)*100),1)) %>% 
+  gt
+```
+
+Studies fully documenting DAG: [@Antonsen2024; @Lock2023; @Riseberg2023; @Campbell2023]
+
+Studies with partial documentation: [@Peng2024; @Prieto2024; @Zhu2023; @Li2023a; @Lewis2023]
+
+## PICO/PECO question followed 
+```{r}
+data %>% 
+  group_by(PICO_question) %>% 
+  summarize(n=n()) %>% 
+  mutate(Percentage = round((n/sum(n)*100),1)) %>% 
+  gt
+```
+
+Studies explicitly using a PICO/PECO question: [@Zhu2023; @Riseberg2023; @Campbell2023]
+
+Studies using a PO question: [@Peng2024]
+
+\pagebreak
+# Package references
+
+```{r}
+#| include: false
+report::cite_packages(session)
+```
+
+  - Grolemund G, Wickham H (2011). “Dates and Times Made Easy with lubridate.” _Journal of Statistical Software_, *40*(3), 1-25. <https://www.jstatsoft.org/v40/i03/>.
+  - Iannone R, Cheng J, Schloerke B, Hughes E, Lauer A, Seo J (2024). _gt: Easily Create Presentation-Ready Display Tables_. R package version 0.10.1, <https://CRAN.R-project.org/package=gt>.
+  - Makowski D, Lüdecke D, Patil I, Thériault R, Ben-Shachar M, Wiernik B (2023). “Automated Results Reporting as a Practical Tool to Improve Reproducibility and Methodological Best Practices Adoption.” _CRAN_. <https://easystats.github.io/report/>.
+  - Müller K, Wickham H (2023). _tibble: Simple Data Frames_. R package version 3.2.1, <https://CRAN.R-project.org/package=tibble>.
+  - R Core Team (2024). _R: A Language and Environment for Statistical Computing_. R Foundation for Statistical Computing, Vienna, Austria. <https://www.R-project.org/>.
+  - Rich B (2023). _table1: Tables of Descriptive Statistics in HTML_. R package version 1.4.3, <https://CRAN.R-project.org/package=table1>.
+  - Rinker TW, Kurkiewicz D (2018). _pacman: Package Management for R_. version 0.5.0, <http://github.com/trinker/pacman>.
+  - Wickham H (2016). _ggplot2: Elegant Graphics for Data Analysis_. Springer-Verlag New York. ISBN 978-3-319-24277-4, <https://ggplot2.tidyverse.org>.
+  - Wickham H (2023). _forcats: Tools for Working with Categorical Variables (Factors)_. R package version 1.0.0, <https://CRAN.R-project.org/package=forcats>.
+  - Wickham H (2023). _stringr: Simple, Consistent Wrappers for Common String Operations_. R package version 1.5.1, <https://CRAN.R-project.org/package=stringr>.
+  - Wickham H, Averick M, Bryan J, Chang W, McGowan LD, François R, Grolemund G, Hayes A, Henry L, Hester J, Kuhn M, Pedersen TL, Miller E, Bache SM, Müller K, Ooms J, Robinson D, Seidel DP, Spinu V, Takahashi K, Vaughan D, Wilke C, Woo K, Yutani H (2019). “Welcome to the tidyverse.” _Journal of Open Source Software_, *4*(43), 1686. doi:10.21105/joss.01686 <https://doi.org/10.21105/joss.01686>.
+  - Wickham H, Bryan J (2023). _readxl: Read Excel Files_. R package version 1.4.3, <https://CRAN.R-project.org/package=readxl>.
+  - Wickham H, François R, Henry L, Müller K, Vaughan D (2023). _dplyr: A Grammar of Data Manipulation_. R package version 1.1.4, <https://CRAN.R-project.org/package=dplyr>.
+  - Wickham H, Henry L (2023). _purrr: Functional Programming Tools_. R package version 1.0.2, <https://CRAN.R-project.org/package=purrr>.
+  - Wickham H, Hester J, Bryan J (2024). _readr: Read Rectangular Text Data_. R package version 2.1.5, <https://CRAN.R-project.org/package=readr>.
+  - Wickham H, Vaughan D, Girlich M (2024). _tidyr: Tidy Messy Data_. R package version 1.3.1, <https://CRAN.R-project.org/package=tidyr>.
+
+```{r}
+#| include: false  
+# Run this chunk if you wish to clear your environment and unload packages.
+
+rm(list = ls())
+pacman::p_unload(negate = TRUE)
+
+```
+
+\pagebreak
+# Study references 
