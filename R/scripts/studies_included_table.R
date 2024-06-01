@@ -28,3 +28,7 @@ write.csv(studies_included,
           file.path(tabfolder, "Table_study_characteristics.csv"), 
           row.names = FALSE,
           na = "")
+
+studies_included %>% 
+  gt %>% 
+  gtsave(filename = paste0(tabfolder, "/Table_study_characteristics.tex"))

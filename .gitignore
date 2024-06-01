@@ -55,6 +55,7 @@ docs/manuscript/*.docx
 docs/manuscript/*.qmd
 docs/manuscript/*.pdf
 docs/manuscript/*.tmp
+docs/manuscript/images
 docs/reports/*.docx
 
 # Powerpoint presentations

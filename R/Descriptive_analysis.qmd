@@ -475,6 +475,7 @@ The table of characteristics of studies with their citations will be saved as *T
 source("scripts/studies_included_table.R")
 ```
 
+
 \pagebreak
 # Package references
 
