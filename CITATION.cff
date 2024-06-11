@@ -1,10 +1,19 @@
 cff-version: 1.0.0
 message: "If you use this material, please cite it as below."
-title: "Indoor dust microbiota composition and allergic diseases: a scoping review"
+title: "Indoor dust microbiota composition and allergic diseases: a scoping review to produce a reusable DAG"
 authors:
   - family-names: Mancilla Galindo
     given-names: Javier
     orcid: https://orcid.org/0000-0002-0718-467X
+  - family-names: Wouters
+    given-names: Inge M.
+    orcid: https://orcid.org/0000-0001-7834-9390 
+  - family-names: Smit
+    given-names: Lidwien A.M.
+    orcid: https://orcid.org/0000-0003-0292-0946
+  - family-names: Bossers
+    given-names: Alex
+    orcid: https://orcid.org/0000-0002-6586-717X
 identifiers:
   - type: doi
     value: PENDING

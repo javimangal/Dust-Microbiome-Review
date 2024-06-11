@@ -140,6 +140,24 @@ rm(table)
 ```
 
 \pagebreak
+## Microbiome type  
+```{r}
+data %>% 
+  group_by(Microbiome_type) %>% 
+  summarize(n = n()) %>% 
+  mutate(Percentage = round(n/sum(n)*100,1) ) %>% 
+  gt
+```
+
+## Available sequence data 
+```{r}
+data %>% 
+  group_by(Raw_sequences) %>% 
+  summarize(n = n()) %>% 
+  mutate(Percentage = round(n/sum(n)*100,1) ) %>% 
+  gt
+```
+
 ## Study Design
 
 ```{r}
@@ -338,6 +356,16 @@ data %>%
 \pagebreak
 ## Dust collectors 
 
+### Multiple collectors 
+```{r}
+data %>% 
+  group_by(Multiple_collectors) %>% 
+  summarize(n = n()) %>% 
+  mutate(Percentage = round(n/sum(n)*100,1) ) %>% 
+  gt
+```
+
+### Type of dust collector 
 ```{r}
 collectors %>% 
   group_by(Dust_collector) %>% 

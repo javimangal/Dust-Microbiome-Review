@@ -178,7 +178,7 @@ for (variable in names(data)) {
         "Confounding seldom considered",
         "Uninformed",
         "p-value or model-based",
-        "beta-coeficient",
+        "beta-coefficient",
         "Historical confounder",
         "DAG"
         ),
