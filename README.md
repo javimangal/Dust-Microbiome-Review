@@ -7,6 +7,8 @@ This study has been presented at:
 -   Weekly [department](https://www.uu.nl/en/organisation/faculty-of-veterinary-medicine/about-the-faculty/departments/iras) meeting on 28/05/2024. [Slides](docs/presentations/presentation-iras-28_05_2024.pdf) 
 -   [Veterinary Science Day](https://veterinaryscienceday.nl/) on 06/06/2024. [Poster](docs/presentations/poster-VSD-06_06_2024.pdf)
 
+You can [contact me](mailto:j.mancillagalindo@uu.nl) or post a request on this repository in case you encounter any issues, or if you'd like to discuss or ask a question on how to use this resource.   
+
 ## Getting started
 
 In order to replicate these analyses, I suggest that the user follows these steps:
@@ -23,8 +25,6 @@ I recommend that the **.qmd** files are opened and ran in sequential order, alth
 -   [Part 2](R/Descriptive_analysis.qmd). Descriptive analyses. [PDF](docs/reports/Descriptive_analysis.pdf)
 -   [Part 3](R/ESC-DAG_cited_by.qmd). Analysis of studies citing the [ESC-DAG method](https://pubmed.ncbi.nlm.nih.gov/31325312/) in the last two years. [PDF](docs/reports/ESC-DAG_cited_by.pdf)
 -   [Part 4](R/Implied_graphs.qmd). Mapping procedure, for the reconstruction of implied graphs from studies assessing the relationship between the indoor dust microbiome and allergic diseases. [PDF](docs/reports/Implied_graphs.pdf)
-
-Although I have made significant efforts to ensure reproducibility of this project, I encourage you to contact ([contact me](mailto:j.mancillagalindo@uu.nl)) or post a request in this repository in case you encounter any issues.   
 
 ## Project Structure
 
