@@ -25,6 +25,8 @@ I recommend that the **.qmd** files are opened and ran in sequential order, alth
 -   [Part 2](R/Descriptive_analysis.qmd). Descriptive analyses. [PDF](docs/reports/Descriptive_analysis.pdf)
 -   [Part 3](R/ESC-DAG_cited_by.qmd). Analysis of studies citing the [ESC-DAG method](https://pubmed.ncbi.nlm.nih.gov/31325312/) in the last two years. [PDF](docs/reports/ESC-DAG_cited_by.pdf)
 -   [Part 4](R/Implied_graphs.qmd). Mapping procedure, for the reconstruction of implied graphs from studies assessing the relationship between the indoor dust microbiome and allergic diseases. [PDF](docs/reports/Implied_graphs.pdf)
+-   [Part 5](R/Microbiome_pooled_analysis_bacteria.qmd). Pooled analysis of the indoor dust bacterial microbiome of 4 studies included in the review plus priorly unpublished data from households in the Netherlands. [PDF](docs/reports/Microbiome_pooled_analysis_bacteria.pdf)
+-   [Part 6](R/Microbiome_pooled_analysis_fungi.qmd). Pooled analysis of the indoor dust fungal microbiome of 3 studies included in the review plus priorly unpublished data from households in the Netherlands. [PDF](docs/reports/Microbiome_pooled_analysis_fungi.pdf)
 
 ## Project Structure
 

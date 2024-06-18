@@ -2,6 +2,9 @@
 /data/temp/*.xlsx
 /data/raw
 
+# Microbiome data (published until authorized by supervisors)
+/data/processed/*.rds
+
 # History files
 .Rhistory
 .Rapp.history
@@ -31,6 +34,9 @@
 /R/*.docx
 /R/images
 /R/*.Rmd
+
+# Alex Bossers' functions 
+/R/scripts/00_helperfunctions
 
 # produced vignettes
 vignettes/*.html

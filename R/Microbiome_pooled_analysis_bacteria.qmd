@@ -1,0 +1,573 @@
+---
+title: "Microbiome: Pooled analysis bacteria"
+subtitle: "Indoor dust bacterial and fungal microbiota composition and allergic diseases: a scoping review"
+author: 
+  - "Javier Mancilla Galindo, MSc student"
+  - "Supervisors: Inge M. Wouters and Alex Bossers"
+  - "Examiner: Lidwien A.M. Smit"
+date: today
+execute: 
+  echo: false
+  warning: false
+toc: true
+format:
+  pdf:
+    documentclass: scrartcl
+bibliography: ../docs/manuscript/references-dust-microbiome-review.bib
+csl: ../docs/manuscript/environment-international.csl
+editor: source
+---
+
+\pagebreak
+
+```{r}
+#| include: false
+# random seed
+seed <- 2202
+
+# load Alex Bossers helper functions
+source("scripts/00_helperfunctions/alx_OutOfSight.R")
+```
+
+```{r}
+#| include: false 
+# Create directories   
+inputfolder   <- "../data/raw/literature_seqdata_dada2/SeqData_dada2/"
+psfolder <- "../data/processed"
+tabfolder <- "../results/output_tables/bacteria"
+figfolder <- "../results/output_figures/bacteria"
+
+dir.create(psfolder, showWarnings = FALSE)
+dir.create(tabfolder, showWarnings = FALSE)
+dir.create(figfolder, showWarnings = FALSE)
+```
+
+```{r}
+#| include: false
+# load required libraries. Install them if not available.
+#
+# if BiocManager asks you to additionally update some packages... 
+# only choose 'a' if you can spare the time!
+# sometimes these updates (especially if many) can take a loooong time to complete. 
+# A restart of R before installing is good practice to unload any packages present in memory.
+
+# install phyloseq and associated vegan microbial community ecology packages
+if ( !require("phyloseq", quietly = TRUE) )
+    BiocManager::install("phyloseq")
+
+# install additional color scales
+if ( !require("RColorBrewer", quietly = TRUE) )
+    BiocManager::install("RColorBrewer")
+
+# install more convenient color scales
+if ( !require("pals", quietly = TRUE) )
+    BiocManager::install("pals")
+
+# install date handling functions
+if ( !require("lubridate", quietly = TRUE) )
+    BiocManager::install("lubridate")
+
+# Reference packages used in session 
+if ( !require("gt", quietly = TRUE) )
+    BiocManager::install("gt")
+
+# Retrieve html tables 
+if ( !require("htmltools", quietly = TRUE) )
+    BiocManager::install("htmltools")
+
+
+# Reference packages used in session 
+if ( !require("report", quietly = TRUE) )
+    BiocManager::install("report")
+```
+
+\pagebreak
+
+# Session
+
+```{r}
+# Log session info: 
+
+# Credits chunk of code: Alex Bossers, Utrecht University
+session <- sessionInfo()
+# remove clutter
+session$BLAS <- NULL
+session$LAPACK <- NULL
+session$loadedOnly <- NULL
+
+# write log file
+writeLines(
+  capture.output(print(session, locale = FALSE)),
+  paste0("sessions/",lubridate::today(), "_session_Microbiome_Data_bacteria.txt")
+)
+
+session
+```
+
+\pagebreak
+
+# Description
+
+A selection of studies included in the scoping review that had available raw sequence data and a comparable dust collection method were identified to retrieve sequence data to undergo processing in the same pipeline, as a proof of concept that pooled analyses could offer insight into the composition of the indoor dust microbiome and to identify potential needs and difficulties for the performance of such pooled microbiome analyses. The type of indoor environment was restricted to dwellings as this was the most common type of indoor environment. A total of **3 studies**[@fakunle2023a; @amin2022a; @vestergaard2018a] following the electrostatic dust collector (EDC) method and **2 studies**[@hickman2022a; @adams2020a] using the petri dish method were selected due to the known comparability of these sample collection methods.[@adams2015a] Additionally, previously unpublished data from a study sampling Dutch households with the EDC method was also included. Out of the 6 studies, 5 studies reported bacterial indoor dust sequences, whereas 4 made fungal ITS sequences publicly available.
+
+This report includes the processing and analysis of **bacterial 16S** sequences.
+
+## Nigerian[@fakunle2023a] and Dutch (unpublished) households
+
+Dutch and Nigerian indoor dust samples follow similar methods of collection through EDC and were processed and analyzed together in the laboratory. These samples have been sequenced for the 16S rRNA combined V5-V6 hypervariable region for bacteria, and the ITS1 region between the 18S and 5.8S rRNA subunits for fungi. After processing, these were compared against the SILVA (bacteria) and UNITE datasets to determine the microbial composition of the samples.
+
+The Dutch samples are from a cross-sectional study aiming to assess environmental factors as determinants of the indoor house dust microbial composition. The study population consisted of households located in Utrecht and surrounding areas of whose inhabitants were invited between April and May 2017 to participate in a survey in which diverse household characteristics, socioeconomic data, and health status variables were collected, as well as airborne dust samples from the household. Participants were instructed to place electrostatic dust collectors at a height of at least 1.25 meters above floor level in the main living room. Out of 600 homes selected to represent different housing characteristics, to which invitations were sent, seventy-nine ultimately provided the answered questionnaires and household dust samples. Only one adult per household provided responses to the questionnaire including their health status and was responsible for collecting and delivering the samples.
+
+The Nigerian samples are from a case-control study of the relationship between indoor airborne dust microbiome and childhood lower respiratory tract infections.[@fakunle2023a]
+
+Phyloseq object containing both NL and NG samples + controls:
+
+```{r}
+bacter_NL_fakunle2023a <- readRDS(
+  paste0(inputfolder,
+         "/Updated_set1+2_16S-v5v6_Nigerian+NL_dust+controls_20240614.rds")
+  ) 
+bacter_NL_fakunle2023a
+```
+
+Only residential households were kept, since this was similarly done with retrieved samples from studies captured in the literature review to reduce the number of samples to process. This was done under the assumption that quality control has already been done for all published and unpublished studies.
+
+Phyloseq object containing both NL and NG samples, after removing controls:
+
+```{r}
+bacter_NL_fakunle2023a <- subset_samples(bacter_NL_fakunle2023a, Sam_type %in% c("NL","NG"))
+bacter_NL_fakunle2023a
+```
+
+```{r}
+sample_sum_plot(bacter_NL_fakunle2023a)
+```
+
+Since there is limited metadata from other studies that would allow comparison by additional environmental determinants or health outcome, this analysis will be limited to a comparison by the country of origin of the samples.
+
+```{r}
+sample_data(bacter_NL_fakunle2023a) <- sample_data(bacter_NL_fakunle2023a) %>% 
+  data.frame %>% 
+  select(SamID, Sam_type) %>% 
+  rename(SampleNames = SamID,
+         Country = Sam_type)
+```
+
+\pagebreak
+
+## Finnish households [@hickman2022a]
+
+[**PRJNA892469**](https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA892469)
+
+```{r}
+bacter_hickman2022a <- readRDS(
+  paste0(inputfolder,
+         "/20240412_Javier_PRJNA892469bac_merged_NAfilled.rds")
+  ) 
+bacter_hickman2022a
+```
+
+```{r}
+sample_sum_plot(bacter_hickman2022a)
+```
+
+```{r}
+sample_data(bacter_hickman2022a) <- sample_data(bacter_hickman2022a) %>% 
+  data.frame %>% 
+  mutate(Country = "FI")
+```
+
+\pagebreak
+
+## Danish households
+
+[**PRJNA801418**](https://www.ncbi.nlm.nih.gov/bioproject/PRJNA801418) corresponds to cow farmers' homes[@amin2022a], and [**PRJNA417363 / SRP124427**](https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA417363), to pig farmers' homes and suburban dwellings.[@vestergaard2018a]
+
+## [@amin2022a]
+
+```{r}
+bacter_amin2022a <- readRDS(
+  paste0(inputfolder,
+         "/20240412_Javier_PRJNA801418bac_merged_NAfilled.rds")
+  ) 
+bacter_amin2022a
+```
+
+```{r}
+sample_sum_plot(bacter_amin2022a)
+```
+
+```{r}
+sample_data(bacter_amin2022a) <- sample_data(bacter_amin2022a) %>% 
+  data.frame %>% 
+  mutate(Country = "DK")
+```
+
+\pagebreak
+
+## [@vestergaard2018a]
+
+```{r}
+bacter_vestergaard2018a <- readRDS(
+  paste0(inputfolder,
+         "/20240412_Javier_SRP124427bac_merged_NAfilled.rds")
+  ) 
+bacter_vestergaard2018a
+```
+
+```{r}
+sample_sum_plot(bacter_vestergaard2018a)
+```
+
+```{r}
+sample_data(bacter_vestergaard2018a) <- sample_data(bacter_vestergaard2018a) %>% 
+  data.frame %>% 
+  mutate(Country = "DK")
+```
+
+\pagebreak
+
+# Merge phyloseq objects
+
+Check if rank names are equal
+
+```{r}
+rank_names(bacter_NL_fakunle2023a)
+
+rank_names(bacter_hickman2022a)
+
+rank_names(bacter_amin2022a)
+
+rank_names(bacter_vestergaard2018a)
+
+```
+
+The GenusSpecies rank is missing in the NL and NG data. I will remove it and check if they are now equal:
+
+```{r}
+tax_table(bacter_hickman2022a) <- tax_table(bacter_hickman2022a)[, -which(rank_names(bacter_hickman2022a) == "GenusSpecies")]
+
+tax_table(bacter_amin2022a) <- tax_table(bacter_amin2022a)[, -which(rank_names(bacter_amin2022a) == "GenusSpecies")]
+
+tax_table(bacter_vestergaard2018a) <- tax_table(bacter_vestergaard2018a)[, -which(rank_names(bacter_vestergaard2018a) == "GenusSpecies")]
+
+all.equal(
+  rank_names(bacter_hickman2022a), 
+  rank_names(bacter_amin2022a), 
+  rank_names(bacter_vestergaard2018a),
+  rank_names(bacter_NL_fakunle2023a)
+  )
+```
+
+Merge into a single phyloseq object
+
+```{r}
+#| eval: false
+# Merge the phyloseq objects
+bacter <- merge_phyloseq(
+  bacter_hickman2022a, 
+  bacter_amin2022a, 
+  bacter_vestergaard2018a,
+  bacter_NL_fakunle2023a
+  )
+
+rm(bacter_hickman2022a, bacter_amin2022a, bacter_vestergaard2018a,bacter_NL_fakunle2023a)
+```
+
+Save unrarefied data:
+
+```{r}
+#| echo: true
+#| eval: false
+saveRDS(
+  bacter, 
+  paste0(psfolder,"/bacter_combined.rds")
+)
+```
+
+\pagebreak
+
+Sample sums plot:
+
+```{r}
+#| echo: false
+#| eval: false
+sample_sum_plot(bacter, color = "Country", percentKeep = 95)
+
+ggsave(
+  filename = "sample_sum_plot.png",
+  path = figfolder,
+  width = 12, 
+  height = 8,
+  units = "in", 
+  dpi = 300
+)
+```
+
+![](images/sample_sum_plot_bacteria.png){fig-align="center"}
+
+I will keep 95% of samples.
+
+```{r}
+#| eval: false
+sample_sums <- sample_sums(bacter)
+
+samples_keep <- names(sample_sums[sample_sums >= 5370])
+
+bacter <- prune_samples(samples_keep, bacter)
+
+rm(sample_sums)
+
+#Check that it matches number in figure
+nsamples(bacter)
+```
+
+Save `bacter_keep`:
+
+```{r}
+#| echo: true
+#| eval: false
+saveRDS(
+  bacter, 
+  paste0(psfolder,"/bacter_keep.rds")
+)
+```
+
+The construction of rarefaction curves was done with the following script:
+
+```{r}
+#| eval: false
+#| echo: true
+source("scripts/rarefaction_plot_bacter.R")
+```
+
+![](images/rarefaction_curves_bacter.png){fig-align="center"}
+
+Rarefying above 10,000 leads to very large losses of samples. Thus, I will rarefy at 10,000 which leads to loosing close to \~10% (n=80) of samples.
+
+```{r}
+#| eval: false
+#| echo: true
+
+bacter_rar <- rarefy_even_depth(
+  bacter, 
+  sample.size=10000, 
+  rngseed=seed, 
+  replace=FALSE 
+  )
+
+bacter_rar
+```
+
+`80 samples removedbecause they contained fewer reads than sample.size. 53231OTUs were removed because they are no longer present in any sample after random subsampling`
+
+The number of samples is now 688.
+
+```{r}
+#| eval: false
+
+saveRDS(
+  bacter_rar, 
+  paste0(psfolder,"/bacter_rar.rds")
+)
+```
+
+\pagebreak
+
+# Alpha diversity
+
+```{r}
+#| eval: false
+alphaplot <- plot_richness( 
+  bacter_rar, 
+  measures=c("Observed", "Shannon"), 
+  x="Country" 
+  )
+
+alphaplot
+
+ggsave(
+  plot = alphaplot,
+  filename = "alphaplot_rarefied.png",
+  path = figfolder,
+  width = 12, 
+  height = 8,
+  units = "in", 
+  dpi = 300
+)
+```
+
+![](images/alphaplot_rarefied.png){fig-align="center"}
+
+\pagebreak
+
+# Relative abundance
+
+```{r}
+#| eval: false
+# Convert to relative abundance
+bacter_rar <- transform_sample_counts( 
+  bacter_rar, 
+  function(x) x / sum(x) * 100 
+  )
+
+
+# Save 
+saveRDS(
+  bacter_rar, 
+  paste0(psfolder,"/bacter_rar_relative.rds")
+)
+```
+
+The figures were generated with the following script:
+
+```{r}
+#| eval: false
+#| echo: true
+source("scripts/relative_abundance_plots_bacter.R")
+```
+
+![](images/Phylum_relative_abundance_top10-01.png){fig-align="center"}
+
+\pagebreak
+
+![](images/Class_relative_abundance_top14-01.png){fig-align="center"}
+
+\pagebreak
+
+![](images/Order_relative_abundance_top30-01.png){fig-align="center"}
+
+\pagebreak
+
+![](images/Family_relative_abundance_top30-01.png){fig-align="center"}
+
+\pagebreak
+
+![](images/Genus_relative_abundance_top35-01.png){fig-align="center"}
+
+\pagebreak
+
+# Beta diversity
+
+PCoA plot will be generated with the following code:
+
+```{r}
+#| eval: false
+#| echo: true
+source("scripts/ordination_plots_fungi.R")
+```
+
+## Axes 1 and 2
+
+![](images/PCoA_bacter.png){fig-align="center"}
+
+\pagebreak
+
+## Axes 1 and 3
+
+![](images/PCoA_bacter_axes1and3.png){fig-align="center"}
+
+\pagebreak
+
+## Hellinger transformed
+
+Perhaps there is improvement with Hellinger transformation:
+
+### Axes 1 and 2
+
+![](images/PCoA_bacter_hellinger.png){fig-align="center"}
+
+\pagebreak
+
+### Axes 1 and 3
+
+![](images/PCoA_bacter_hellinger_axes1and3.png){fig-align="center"}
+
+\pagebreak
+
+# Permanova
+
+Permanova done with the following code:
+
+```{r}
+#| eval: false
+#| echo: true
+source("scripts/permanova_bacteria.R")
+```
+
+### Results Permanova
+
+```{r}
+includeHTML("../results/output_tables/bacteria/permanova_country_bacter.html")
+```
+
+### Dispersion Test
+
+```{r}
+dispersion <- readRDS("../results/output_tables/bacteria/dispersion_country_bacter.rds")
+dispersion
+```
+
+\pagebreak
+
+### Pairwise Permanova
+
+```{r}
+includeHTML("../results/output_tables/bacteria/pairwise_permanova_country_bacter.html")
+```
+
+Updated figure:
+
+```{r}
+#| eval: false
+pcoa_plot <- readRDS("../results/output_figures/bacteria/PCoA_bacter_hellinger_plot.rds")
+
+pcoa_plot + 
+  labs(title = "PERMANOVA: R² = 0.34, p < 0.001") + 
+  theme(plot.title = element_text(hjust = 1)) 
+
+ggsave(
+  filename = paste0(figfolder,"/PCoA_bacter_updated.png"),
+  width = 9,
+  height = 7,
+  dpi = 300
+)
+```
+
+![](images/PCoA_bacter_updated.png){fig-align="center"}
+
+\pagebreak
+
+# Package References
+
+```{r}
+#| include: false
+report::cite_packages(session)
+```
+
+  - Cheng J, Sievert C, Schloerke B, Chang W, Xie Y, Allen J (2023). _htmltools: Tools for HTML_. R package version 0.5.5, <https://CRAN.R-project.org/package=htmltools>.
+  - Grolemund G, Wickham H (2011). “Dates and Times Made Easy with lubridate.” _Journal of Statistical Software_, *40*(3), 1-25. <https://www.jstatsoft.org/v40/i03/>.
+  - Iannone R, Cheng J, Schloerke B, Hughes E, Lauer A, Seo J (2024). _gt: Easily Create Presentation-Ready Display Tables_. R package version 0.10.1, <https://CRAN.R-project.org/package=gt>.
+  - Makowski D, Lüdecke D, Patil I, Thériault R, Ben-Shachar M, Wiernik B (2023). “Automated Results Reporting as a Practical Tool to Improve Reproducibility and Methodological Best Practices Adoption.” _CRAN_. <https://easystats.github.io/report/>.
+  - McMurdie PJ, Holmes S (2013). “phyloseq: An R package for reproducible interactive analysis and graphics of microbiome census data.” _PLoS ONE_, *8*(4), e61217. <http://dx.plos.org/10.1371/journal.pone.0061217>.
+  - Microsoft, Weston S (2022). _foreach: Provides Foreach Looping Construct_. R package version 1.5.2, <https://CRAN.R-project.org/package=foreach>.
+  - Morgan M, Ramos M (2023). _BiocManager: Access the Bioconductor Project Package Repository_. R package version 1.30.22, <https://CRAN.R-project.org/package=BiocManager>.
+  - Müller K, Wickham H (2023). _tibble: Simple Data Frames_. R package version 3.2.1, <https://CRAN.R-project.org/package=tibble>.
+  - Neuwirth E (2022). _RColorBrewer: ColorBrewer Palettes_. R package version 1.1-3, <https://CRAN.R-project.org/package=RColorBrewer>.
+  - Oksanen J, Simpson G, Blanchet F, Kindt R, Legendre P, Minchin P, O'Hara R, Solymos P, Stevens M, Szoecs E, Wagner H, Barbour M, Bedward M, Bolker B, Borcard D, Carvalho G, Chirico M, De Caceres M, Durand S, Evangelista H, FitzJohn R, Friendly M, Furneaux B, Hannigan G, Hill M, Lahti L, McGlinn D, Ouellette M, Ribeiro Cunha E, Smith T, Stier A, Ter Braak C, Weedon J (2022). _vegan: Community Ecology Package_. R package version 2.6-4, <https://CRAN.R-project.org/package=vegan>.
+  - R Core Team (2022). _R: A Language and Environment for Statistical Computing_. R Foundation for Statistical Computing, Vienna, Austria. <https://www.R-project.org/>.
+  - Sarkar D (2008). _Lattice: Multivariate Data Visualization with R_. Springer, New York. ISBN 978-0-387-75968-5, <http://lmdvr.r-forge.r-project.org>.
+  - Simpson G (2022). _permute: Functions for Generating Restricted Permutations of Data_. R package version 0.9-7, <https://CRAN.R-project.org/package=permute>.
+  - Wickham H (2016). _ggplot2: Elegant Graphics for Data Analysis_. Springer-Verlag New York. ISBN 978-3-319-24277-4, <https://ggplot2.tidyverse.org>.
+  - Wickham H (2022). _stringr: Simple, Consistent Wrappers for Common String Operations_. R package version 1.5.0, <https://CRAN.R-project.org/package=stringr>.
+  - Wickham H (2023). _forcats: Tools for Working with Categorical Variables (Factors)_. R package version 1.0.0, <https://CRAN.R-project.org/package=forcats>.
+  - Wickham H, Averick M, Bryan J, Chang W, McGowan LD, François R, Grolemund G, Hayes A, Henry L, Hester J, Kuhn M, Pedersen TL, Miller E, Bache SM, Müller K, Ooms J, Robinson D, Seidel DP, Spinu V, Takahashi K, Vaughan D, Wilke C, Woo K, Yutani H (2019). “Welcome to the tidyverse.” _Journal of Open Source Software_, *4*(43), 1686. doi:10.21105/joss.01686 <https://doi.org/10.21105/joss.01686>.
+  - Wickham H, François R, Henry L, Müller K, Vaughan D (2023). _dplyr: A Grammar of Data Manipulation_. R package version 1.1.2, <https://CRAN.R-project.org/package=dplyr>.
+  - Wickham H, Henry L (2023). _purrr: Functional Programming Tools_. R package version 1.0.1, <https://CRAN.R-project.org/package=purrr>.
+  - Wickham H, Hester J, Bryan J (2023). _readr: Read Rectangular Text Data_. R package version 2.1.4, <https://CRAN.R-project.org/package=readr>.
+  - Wickham H, Vaughan D, Girlich M (2023). _tidyr: Tidy Messy Data_. R package version 1.3.0, <https://CRAN.R-project.org/package=tidyr>.
+  - Wright K (2021). _pals: Color Palettes, Colormaps, and Tools to Evaluate Them_. R package version 1.7, <https://CRAN.R-project.org/package=pals>.
+
+\pagebreak
+
+# Study References
