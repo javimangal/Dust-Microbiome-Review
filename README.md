@@ -12,7 +12,7 @@ You can [contact me](mailto:j.mancillagalindo@uu.nl) or post a request on this r
 ## Getting started
 
 In order to replicate these analyses, I suggest that the user follows these steps:
-1. Install [R and RStudio](https://posit.co/download/rstudio-desktop/) on your computer if you haven't done so. (Note that these analyses were conducted under R version 4.4.0 and RStudio 2024.04.1).
+1. Install [R and RStudio](https://posit.co/download/rstudio-desktop/) on your computer if you haven't done so. (Note that analyses described between part 1 and 4 were conducted under R version 4.4.0 and RStudio 2024.04.1, while analyses in part 5 and 6 were done in R version 4.2.2).
 2. [Clone this repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository). If you do not know how to do this, [you can follow these instructions](https://docs.github.com/en/desktop/overview/getting-started-with-github-desktop). Alternatively, you can [download this repository](https://github.com/javimangal/Dust-Microbiome-Review/archive/refs/heads/main.zip), unpack it, and place it in a folder in your computer.
 3. You should now have all these files in your computer with an identical folder structure (described in the following section).
 4. In the main directory, open the file named ***Dust-Microbiome-Review.Rproj*** in RStudio.
@@ -25,8 +25,10 @@ I recommend that the **.qmd** files are opened and ran in sequential order, alth
 -   [Part 2](R/Descriptive_analysis.qmd). Descriptive analyses. [PDF](docs/reports/Descriptive_analysis.pdf)
 -   [Part 3](R/ESC-DAG_cited_by.qmd). Analysis of studies citing the [ESC-DAG method](https://pubmed.ncbi.nlm.nih.gov/31325312/) in the last two years. [PDF](docs/reports/ESC-DAG_cited_by.pdf)
 -   [Part 4](R/Implied_graphs.qmd). Mapping procedure, for the reconstruction of implied graphs from studies assessing the relationship between the indoor dust microbiome and allergic diseases. [PDF](docs/reports/Implied_graphs.pdf)
--   [Part 5](R/Microbiome_pooled_analysis_bacteria.qmd). Pooled analysis of the indoor dust bacterial microbiome of 4 studies included in the review plus priorly unpublished data from households in the Netherlands. [PDF](docs/reports/Microbiome_pooled_analysis_bacteria.pdf)
+-   [Part 5](R/Microbiome_pooled_analysis_bacteria.qmd). Pooled analysis of the indoor dust bacterial microbiome of 5 studies included in the review plus priorly unpublished data from households in the Netherlands. [PDF](docs/reports/Microbiome_pooled_analysis_bacteria.pdf)
 -   [Part 6](R/Microbiome_pooled_analysis_fungi.qmd). Pooled analysis of the indoor dust fungal microbiome of 3 studies included in the review plus priorly unpublished data from households in the Netherlands. [PDF](docs/reports/Microbiome_pooled_analysis_fungi.pdf)
+
+Note: I have not provided data for reproducibility of parts 5 and 6 in this repository since this still needs to be discussed internally to decide the best way to share the corresponding data. 
 
 ## Project Structure
 
@@ -68,5 +70,4 @@ The full documentation with comments of statistical analyses can be found in the
 This project is licensed under the terms of the [MIT License](/LICENSE).
 
 This project structure template repository is adapted from the [Good Enough Project](https://github.com/bvreede/good-enough-project) Cookiecutter template by Barbara Vreede (2019).
-
 
