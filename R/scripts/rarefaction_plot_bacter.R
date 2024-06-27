@@ -23,7 +23,7 @@ bacter <- readRDS(
 ) 
 
 #### Rarefaction plot ####
-ggrare2( bacter, step=50, label="SampleNames", color="Country" )
+ggrare2( bacter, step=500, label="SampleNames", color="Country" )
 
 ggsave(
   filename = "rarefaction_curves_bacter.png",

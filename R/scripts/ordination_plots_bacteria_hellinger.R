@@ -2,7 +2,7 @@
 source("scripts/00_helperfunctions/alx_OutOfSight.R")
 
 inputfolder <- "../data/processed"
-figfolder <- "../results/output_figures/bacteria"
+figfolder <- "../results/output_figures/bacteria/beta_diversity/Country"
 dir.create(figfolder, showWarnings = FALSE)
 
 if ( !require("phyloseq", quietly = TRUE) )
@@ -19,7 +19,7 @@ if ( !require("pals", quietly = TRUE) )
 #### Read data #### 
 bacter <- readRDS(
   paste0(inputfolder,
-         "/bacter_rar.rds")
+         "/bacter_rar_genus.rds")
 ) 
 
 #### Hellinger transformation #### 

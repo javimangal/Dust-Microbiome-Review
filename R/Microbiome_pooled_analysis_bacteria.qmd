@@ -108,7 +108,7 @@ session
 
 # Description
 
-A selection of studies included in the scoping review that had available raw sequence data and a comparable dust collection method were identified to retrieve sequence data to undergo processing in the same pipeline, as a proof of concept that pooled analyses could offer insight into the composition of the indoor dust microbiome and to identify potential needs and difficulties for the performance of such pooled microbiome analyses. The type of indoor environment was restricted to dwellings as this was the most common type of indoor environment. A total of **3 studies**[@fakunle2023a; @amin2022a; @vestergaard2018a] following the electrostatic dust collector (EDC) method and **2 studies**[@hickman2022a; @adams2020a] using the petri dish method were selected due to the known comparability of these sample collection methods.[@adams2015a] Additionally, previously unpublished data from a study sampling Dutch households with the EDC method was also included. Out of the 6 studies, 5 studies reported bacterial indoor dust sequences, whereas 4 made fungal ITS sequences publicly available.
+A selection of studies included in the scoping review that had available raw sequence data and a comparable dust collection method were identified to retrieve sequence data to undergo processing in the same pipeline, as a proof of concept that pooled analyses could offer insight into the composition of the indoor dust microbiome and to identify potential needs and difficulties for the performance of such pooled microbiome analyses. The type of indoor environment was restricted to dwellings as this was the most common type of indoor environment. A total of **4 studies**[@fakunle2023a; @amin2022a; @vestergaard2018a; vandenborght2021a] following the electrostatic dust collector (EDC) method and **2 studies**[@hickman2022a; @adams2020a] using the petri dish method were selected due to the known comparability of these sample collection methods.[@adams2015a] Additionally, previously unpublished data from a study sampling Dutch households with the EDC method was also included. Out of the 7 studies, 6 studies reported bacterial indoor dust sequences, whereas 5 made fungal ITS sequences publicly available.
 
 This report includes the processing and analysis of **bacterial 16S** sequences.
 
@@ -149,8 +149,14 @@ Since there is limited metadata from other studies that would allow comparison b
 sample_data(bacter_NL_fakunle2023a) <- sample_data(bacter_NL_fakunle2023a) %>% 
   data.frame %>% 
   select(SamID, Sam_type) %>% 
-  rename(SampleNames = SamID,
-         Country = Sam_type)
+  rename(SampleNames = SamID, Country = Sam_type) %>% 
+  mutate(
+    Collector = "EDC",
+    Study = case_when(
+      Country == "NG" ~ "NG_fakunle2023",
+      Country == "NL" ~ "NL_unpublished",
+    )
+  )
 ```
 
 \pagebreak
@@ -174,7 +180,11 @@ sample_sum_plot(bacter_hickman2022a)
 ```{r}
 sample_data(bacter_hickman2022a) <- sample_data(bacter_hickman2022a) %>% 
   data.frame %>% 
-  mutate(Country = "FI")
+  mutate(
+    Country = "FI",
+    Collector = "petri",
+    Study = "FI_hickman2022"
+    )
 ```
 
 \pagebreak
@@ -200,12 +210,18 @@ sample_sum_plot(bacter_amin2022a)
 ```{r}
 sample_data(bacter_amin2022a) <- sample_data(bacter_amin2022a) %>% 
   data.frame %>% 
-  mutate(Country = "DK")
+  mutate(
+    Country = "DK",
+    Collector = "EDC",
+    Study = "DK_amin2022"
+    )
 ```
 
 \pagebreak
 
 ## [@vestergaard2018a]
+
+[**PRJNA635002**](https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA635002)
 
 ```{r}
 bacter_vestergaard2018a <- readRDS(
@@ -222,7 +238,37 @@ sample_sum_plot(bacter_vestergaard2018a)
 ```{r}
 sample_data(bacter_vestergaard2018a) <- sample_data(bacter_vestergaard2018a) %>% 
   data.frame %>% 
-  mutate(Country = "DK")
+  mutate(
+    Country = "DK",
+    Collector = "EDC",
+    Study = "DK_vestergaard2018"
+    )
+```
+
+\pagebreak
+
+## [@vandenborght2021a]
+
+```{r}
+bacter_vandenborght2021a <- readRDS(
+  paste0(inputfolder,
+         "/20240412_Javier_PRJNA635002bac_merged_NAfilled.rds")
+  ) 
+bacter_vandenborght2021a
+```
+
+```{r}
+sample_sum_plot(bacter_vandenborght2021a)
+```
+
+```{r}
+sample_data(bacter_vandenborght2021a) <- sample_data(bacter_vandenborght2021a) %>% 
+  data.frame %>% 
+  mutate(
+    Country = "FR",
+    Collector = "EDC",
+    Study = "FR_vandenborght2021a"
+    )
 ```
 
 \pagebreak
@@ -240,6 +286,8 @@ rank_names(bacter_amin2022a)
 
 rank_names(bacter_vestergaard2018a)
 
+rank_names(bacter_vandenborght2021a)
+
 ```
 
 The GenusSpecies rank is missing in the NL and NG data. I will remove it and check if they are now equal:
@@ -251,10 +299,13 @@ tax_table(bacter_amin2022a) <- tax_table(bacter_amin2022a)[, -which(rank_names(b
 
 tax_table(bacter_vestergaard2018a) <- tax_table(bacter_vestergaard2018a)[, -which(rank_names(bacter_vestergaard2018a) == "GenusSpecies")]
 
+tax_table(bacter_vandenborght2021a) <- tax_table(bacter_vandenborght2021a)[, -which(rank_names(bacter_vandenborght2021a) == "GenusSpecies")]
+
 all.equal(
   rank_names(bacter_hickman2022a), 
   rank_names(bacter_amin2022a), 
   rank_names(bacter_vestergaard2018a),
+  rank_names(bacter_vandenborght2021a),
   rank_names(bacter_NL_fakunle2023a)
   )
 ```
@@ -268,10 +319,11 @@ bacter <- merge_phyloseq(
   bacter_hickman2022a, 
   bacter_amin2022a, 
   bacter_vestergaard2018a,
+  bacter_vandenborght2021a,
   bacter_NL_fakunle2023a
   )
 
-rm(bacter_hickman2022a, bacter_amin2022a, bacter_vestergaard2018a,bacter_NL_fakunle2023a)
+rm(bacter_hickman2022a, bacter_amin2022a, bacter_vestergaard2018a,bacter_NL_fakunle2023a, bacter_vandenborght2021a)
 ```
 
 Save unrarefied data:
@@ -295,7 +347,7 @@ Sample sums plot:
 sample_sum_plot(bacter, color = "Country", percentKeep = 95)
 
 ggsave(
-  filename = "sample_sum_plot.png",
+  filename = "sample_sum_plot_bacteria.png",
   path = figfolder,
   width = 12, 
   height = 8,
@@ -312,7 +364,7 @@ I will keep 95% of samples.
 #| eval: false
 sample_sums <- sample_sums(bacter)
 
-samples_keep <- names(sample_sums[sample_sums >= 5370])
+samples_keep <- names(sample_sums[sample_sums >= 5513])
 
 bacter <- prune_samples(samples_keep, bacter)
 
@@ -343,7 +395,7 @@ source("scripts/rarefaction_plot_bacter.R")
 
 ![](images/rarefaction_curves_bacter.png){fig-align="center"}
 
-Rarefying above 10,000 leads to very large losses of samples. Thus, I will rarefy at 10,000 which leads to loosing close to \~10% (n=80) of samples.
+Rarefying above 10,000 leads to very large losses of samples. Thus, I will rarefy at 10,000 which leads to loosing close to \~10% (n=79) of samples.
 
 ```{r}
 #| eval: false
@@ -359,9 +411,9 @@ bacter_rar <- rarefy_even_depth(
 bacter_rar
 ```
 
-`80 samples removedbecause they contained fewer reads than sample.size. 53231OTUs were removed because they are no longer present in any sample after random subsampling`
+`79 samples removed because they contained fewer reads than sample.size. 115622OTUs were removed because they are no longer present in any sample after random subsampling`
 
-The number of samples is now 688.
+The number of samples is now 710.
 
 ```{r}
 #| eval: false
@@ -376,6 +428,7 @@ saveRDS(
 
 # Alpha diversity
 
+### ASV level  
 ```{r}
 #| eval: false
 alphaplot <- plot_richness( 
@@ -384,7 +437,6 @@ alphaplot <- plot_richness(
   x="Country" 
   )
 
-alphaplot
 
 ggsave(
   plot = alphaplot,
@@ -397,7 +449,57 @@ ggsave(
 )
 ```
 
-![](images/alphaplot_rarefied.png){fig-align="center"}
+![](images/alphaplot_bacter_rarefied.png){fig-align="center"}
+
+\pagebreak
+
+### Genus level  
+
+```{r}
+#| eval: false
+# Agglomerate at genus level and save 
+
+bacter_rar_genus <- tax_glom(bacter_rar, taxrank="Genus")
+
+saveRDS(
+  bacter_rar_genus, 
+  paste0(psfolder,"/bacter_rar_genus.rds")
+)
+```
+
+
+```{r}
+#| eval: false
+alphaplot <- plot_richness( 
+  bacter_rar_genus, 
+  measures=c("Observed", "Shannon"), 
+  x="Country" 
+  )
+
+ggsave(
+  plot = alphaplot,
+  filename = "alphaplot_rarefied_genus.png",
+  path = figfolder,
+  width = 12, 
+  height = 8,
+  units = "in", 
+  dpi = 300
+)
+
+alphaplot_violin <- alphaplot + geom_violin()
+
+ggsave(
+  plot = alphaplot_violin,
+  filename = "alphaplot_rarefied_genus_violin.png",
+  path = figfolder,
+  width = 12, 
+  height = 8,
+  units = "in", 
+  dpi = 300
+)
+```
+
+![](images/alphaplot_bacter_rarefied_genus_violin.png){fig-align="center"}
 
 \pagebreak
 
@@ -427,43 +529,44 @@ The figures were generated with the following script:
 source("scripts/relative_abundance_plots_bacter.R")
 ```
 
-![](images/Phylum_relative_abundance_top10-01.png){fig-align="center"}
+![](images/bacter_Phylum_relative_abundance_top10.png){fig-align="center"}
 
 \pagebreak
 
-![](images/Class_relative_abundance_top14-01.png){fig-align="center"}
+![](images/bacter_Class_relative_abundance_top14.png){fig-align="center"}
 
 \pagebreak
 
-![](images/Order_relative_abundance_top30-01.png){fig-align="center"}
+![](images/bacter_Order_relative_abundance_top30.png){fig-align="center"}
 
 \pagebreak
 
-![](images/Family_relative_abundance_top30-01.png){fig-align="center"}
+![](images/bacter_Family_relative_abundance_top30.png){fig-align="center"}
 
 \pagebreak
 
-![](images/Genus_relative_abundance_top35-01.png){fig-align="center"}
+![](images/bacter_Genus_relative_abundance_top35.png){fig-align="center"}
 
 \pagebreak
 
-# Beta diversity
+# Beta diversity (Genus level)
 
+## PCoA  
 PCoA plot will be generated with the following code:
 
 ```{r}
 #| eval: false
 #| echo: true
-source("scripts/ordination_plots_fungi.R")
+source("scripts/ordination_plots_bacteria.R")
 ```
 
-## Axes 1 and 2
+### Axes 1 and 2
 
 ![](images/PCoA_bacter.png){fig-align="center"}
 
 \pagebreak
 
-## Axes 1 and 3
+### Axes 1 and 3
 
 ![](images/PCoA_bacter_axes1and3.png){fig-align="center"}
 
@@ -485,6 +588,20 @@ Perhaps there is improvement with Hellinger transformation:
 
 \pagebreak
 
+## NMDS  
+
+### Axes 1 and 2
+
+![](images/NMDS_bacter_hellinger.png){fig-align="center"}
+
+\pagebreak
+
+### Axes 1 and 3
+
+![](images/NMDS_bacter_hellinger_axes1and3.png){fig-align="center"}
+
+\pagebreak
+
 # Permanova
 
 Permanova done with the following code:
@@ -494,6 +611,7 @@ Permanova done with the following code:
 #| echo: true
 source("scripts/permanova_bacteria.R")
 ```
+
 
 ### Results Permanova
 
@@ -516,25 +634,27 @@ dispersion
 includeHTML("../results/output_tables/bacteria/pairwise_permanova_country_bacter.html")
 ```
 
-Updated figure:
+
+
+Updated figure (NMDS hellinger transformed plot):
 
 ```{r}
 #| eval: false
-pcoa_plot <- readRDS("../results/output_figures/bacteria/PCoA_bacter_hellinger_plot.rds")
+nmds_plot <- readRDS("../results/output_figures/bacteria/beta_diversity/Country/NMDS_bacter_hellinger_plot.rds")
 
-pcoa_plot + 
-  labs(title = "PERMANOVA: R² = 0.34, p < 0.001") + 
+nmds_plot + 
+  labs(title = "PERMANOVA: R² = 0.37, p < 0.001") + 
   theme(plot.title = element_text(hjust = 1)) 
 
 ggsave(
-  filename = paste0(figfolder,"/PCoA_bacter_updated.png"),
+  filename = paste0(figfolder,"/NMDS_bacter_country_updated.png"),
   width = 9,
   height = 7,
   dpi = 300
 )
 ```
 
-![](images/PCoA_bacter_updated.png){fig-align="center"}
+![](images/NMDS_bacter_country_updated.png){fig-align="center"}
 
 \pagebreak
 

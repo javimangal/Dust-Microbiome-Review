@@ -18,8 +18,14 @@ if ( !require("gt", quietly = TRUE) )
 #### Read data #### 
 bacter <- readRDS(
   paste0(inputfolder,
-         "/bacter_rar_relative.rds")
+         "/bacter_rar_genus.rds")
 ) 
+
+#### Convert to relative abundance #### 
+bacter <-  transform_sample_counts( 
+  bacter, 
+  function(x) x / sum(x) * 100 
+)
 
 #### Permanova #### 
 permanova <- permanova2( 
@@ -47,7 +53,7 @@ dispersion <- hdisp(
 
 saveRDS(
   dispersion, 
-  file = paste0(figfolder, "/dispersion_country_bacter.rds")
+  file = paste0(tabfolder, "/dispersion_country_bacter.rds")
 )
 
 #### Pairwise permanova #### 
@@ -61,7 +67,7 @@ pairwise_permanova <- pairwise.permanovas2(
 
 # Save 
 gtsave(
-  pairwise_permanova %>% gt,
+  pairwise_permanova %>% arrange(desc(R2)) %>% gt,
   filename = "pairwise_permanova_country_bacter.html",
   path = tabfolder
 )
