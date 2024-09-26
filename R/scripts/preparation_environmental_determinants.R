@@ -24,6 +24,10 @@ categories_environmental_determinants <-
       "mite allergen",
       "mouse allergen"
     ) %>% setLabel("allergen"),
+    biological_exposure <- c(
+      "endotoxin",
+      "ergosterol"
+    ) %>% setLabel("biological exposure marker"),
     building_characteristics <- c(
       "age of building",
       "building architecture",
@@ -60,8 +64,6 @@ categories_environmental_determinants <-
     chemicals <- c(
       "ambient chemical compounds",
       "DEHP",
-      "endotoxin",
-      "ergosterol",
       "formaldehyde",
       "microbial toxins",
       "microplastics",
@@ -131,7 +133,8 @@ categories_environmental_determinants <-
     heating <- c(
       "heating",
       "heating systems",
-      "type of heating"
+      "type of heating",
+      "air conditioning"
     ) %>% setLabel("heating"),
     humidity <- c(
       "dampness",
@@ -211,7 +214,6 @@ categories_environmental_determinants <-
     ventilation <- c(
       "aeration time",
       "airflow rate",
-      "air conditioning",
       "air exchange rate",
       "natural ventilation",
       "number of windows",
